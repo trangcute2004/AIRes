@@ -7,33 +7,35 @@ public class Customer : MonoBehaviour
     private enum State { LookingForTable, WaitingForOrder, Eating, Leaving }
     private State currentState = State.LookingForTable;
     private Table assignedTable;
+    private Order currentOrder;
 
     // Eating time before customer leaves
     private float eatingDuration = 5f; // Duration in seconds
     private float eatingTimer;
 
+    // List of food items available to order
+    private List<Order> menu = new List<Order>();
+
+    public void SetMenu(List<Order> availableMenu)
+    {
+        menu = availableMenu;
+    }
+
     // This method finds an empty, clean table and assigns it to the customer
     public void FindTable(List<Table> tables)
     {
-        // Find an available table that is neither occupied nor dirty
-        assignedTable = tables.Find(t => t != null && !t.IsOccupied && !t.IsDirty);
+        assignedTable = tables.Find(t => !t.IsOccupied && !t.IsDirty); // Look for an available table
 
-        // If a table is found, occupy it and update the customer state
         if (assignedTable != null)
         {
             assignedTable.Occupy(); // Mark the table as occupied
-            transform.position = assignedTable.transform.position; // Move the customer to the table position
+            transform.position = assignedTable.transform.position; // Move customer to the table position
             currentState = State.WaitingForOrder; // Change state to WaitingForOrder
-            Debug.Log($"Customer assigned to Table {assignedTable.TableNumber}");
         }
         else
         {
-            // If no table is available, log a message
             Debug.Log("No available tables for the customer.");
-
-            // Optional behavior: Customers might wait or leave if no table is found
-            currentState = State.Leaving; // Set the state to Leaving (optional, adjust logic as needed)
-                                          // You could also introduce a timeout or a waiting mechanism before they leave or keep looking for a table
+            // Optionally: Add behavior for customers who wait for a table or leave if none is found
         }
     }
 
@@ -60,6 +62,20 @@ public class Customer : MonoBehaviour
         }
     }
 
+    // Waiting for order to be served
+    private void WaitForOrder()
+    {
+        if (currentOrder == null)
+        {
+            // Simulate ordering by selecting a random order (dish) from the menu
+            currentOrder = menu[Random.Range(0, menu.Count)];
+            Debug.Log($"Customer ordered: {currentOrder.DishName} (Preparation Time: {currentOrder.GetPreparationTime()}s)");
+
+            // Start the timer for the order's preparation time
+            currentState = State.Eating; // Transition to eating after the order is placed
+        }
+    }
+
     // Eat method simulates the eating duration with a timer
     private void Eat()
     {
@@ -78,7 +94,7 @@ public class Customer : MonoBehaviour
         {
             assignedTable.Vacate(); // Free up the table for other customers
         }
-
+        
         Destroy(gameObject); // Remove the customer from the scene
     }
 
