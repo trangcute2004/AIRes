@@ -5,12 +5,12 @@ using UnityEngine;
 
 public class GameController : MonoBehaviour
 {
-    public List<Table> tables;
+    public GameObject tablePrefab;
+    public List<Table> tables = new List<Table>();
     public List<WaitStaff> waitStaff;
     public Chef chef;
-    public List<Customer> customers = new List<Customer>();
-    public GameObject customerPrefab;  // Prefab for spawning customers
-    public Vector3 spawnPosition;      // Set this to the position where customers should appear
+    public GameObject customerPrefab;
+    public Vector3 spawnPosition;
     public int customerSpawnRate;
 
     void Start()
@@ -21,32 +21,47 @@ public class GameController : MonoBehaviour
         InvokeRepeating("SpawnCustomer", 0, customerSpawnRate);
     }
 
+    private void InitializeTables()
+    {
+        // Ensure the tables list is cleared before initializing new tables
+        tables.Clear();
+
+        // Instantiate 6 tables
+        for (int i = 0; i < 6; i++)
+        {
+            // Instantiate tablePrefab at a position on the screen, spaced evenly
+            GameObject tableObject = Instantiate(tablePrefab, new Vector3(i * 2.0f, 0, 0), Quaternion.identity); // Spread tables on screen
+
+            // Ensure the tablePrefab has the Table script attached
+            Table table = tableObject.GetComponent<Table>();
+
+            // Initialize each table with a unique table number (i+1) and a capacity of 4 customers
+            table.InitializeTable(i + 1, 4);
+
+            // Add the table to the tables list
+            tables.Add(table);
+
+            // Optionally, you can name the GameObject for easier debugging
+            tableObject.name = $"Table {i + 1}";
+        }
+    }
+
     private void InitializeChef()
     {
-        chef = FindObjectOfType<Chef>(); // Assume only one chef in the scene
+        // Implement as needed
     }
 
     private void InitializeWaitStaff()
     {
-        waitStaff = new List<WaitStaff>(FindObjectsOfType<WaitStaff>()); // Find all WaitStaff in the scene
-    }
-
-    private void InitializeTables()
-    {
-        tables = new List<Table>(FindObjectsOfType<Table>()); // Assume each table is a GameObject with the Table script attached
+        // Implement as needed
     }
 
     void SpawnCustomer()
     {
-        // Instantiate a new customer GameObject at the spawn position
         GameObject customerObject = Instantiate(customerPrefab, spawnPosition, Quaternion.identity);
-
-        // Get the Customer component
         Customer customer = customerObject.GetComponent<Customer>();
 
-        // Ensure the customer finds a table and add it to the list of customers
-        customer.FindTable(tables);
-        customers.Add(customer);
+        customer.FindTable(tables); // Pass the list of tables to find an empty one
     }
 
     void Update()
