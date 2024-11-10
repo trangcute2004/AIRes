@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 
 public class GameController : MonoBehaviour
@@ -11,6 +10,9 @@ public class GameController : MonoBehaviour
     public GameObject customerPrefab; // Customer prefab
     public Vector3 spawnPosition; // Position where customers will spawn
     public int customerSpawnRate; // Rate at which customers spawn
+    public GameObject burgerPrefab;  // Assign this in the inspector for the burger sprite
+    public GameObject pizzaPrefab;   // Assign this in the inspector for the pizza sprite
+    public GameObject saladPrefab;   // Assign this in the inspector for the salad sprite
 
     private List<Order> menu = new List<Order>(); // Declare the menu list here
 
@@ -23,12 +25,18 @@ public class GameController : MonoBehaviour
         InvokeRepeating("SpawnCustomer", 0, customerSpawnRate); // Repeatedly spawn customers
     }
 
+    // Initialize the menu items
     private void InitializeMenu()
     {
-        // Adding 3 order items to the menu
-        menu.Add(new Order("Burger", 5.0f));  // 5 seconds preparation time
-        menu.Add(new Order("Pizza", 10.0f));  // 10 seconds preparation time
-        menu.Add(new Order("Salad", 3.0f));   // 3 seconds preparation time
+        if (burgerPrefab == null || pizzaPrefab == null || saladPrefab == null)
+        {
+            Debug.LogError("Dish Prefabs are not assigned!");
+        }
+
+        // Adding 3 order items to the menu with Sprite assigned
+        menu.Add(new Order("Burger", 5.0f, burgerPrefab));  // 5 seconds preparation time
+        menu.Add(new Order("Pizza", 10.0f, pizzaPrefab));   // 10 seconds preparation time
+        menu.Add(new Order("Salad", 3.0f, saladPrefab));    // 3 seconds preparation time
     }
 
     // Initialize existing tables (find all Table objects in the scene)
@@ -53,21 +61,25 @@ public class GameController : MonoBehaviour
     // Method to spawn a new customer at the spawn position
     void SpawnCustomer()
     {
+        // You can spawn at any corner. For example, let's spawn at the top-left corner:
+        Vector3 spawnPosition = new Vector3(-10, 0, 10); // Adjust these values based on your scene
+
         GameObject customerObject = Instantiate(customerPrefab, spawnPosition, Quaternion.identity);
         Customer customer = customerObject.GetComponent<Customer>();
 
-        customer.SetMenu(menu); // Set the menu with orders for the customer
+        customer.SetMenu(menu); // Pass the available menu to the customer
 
         // Ensure the customer finds an available table from the list of tables
-        customer.FindTable(tables); // Pass the list of existing tables to find an empty one
+        customer.FindTable(tables); // This will handle moving to the table
     }
+
+
 
     void Update()
     {
-        // You can update the state for WaitStaff, Chef, and Customers here if needed
-        // For example, update customer states or interactions
+        // Here you can update other game elements like state management for customers, chefs, etc.
+        // For instance, updating state for WaitStaff, Chef, and Customers
         // foreach (var waiter in waitStaff) waiter.UpdateState();
         // chef.UpdateState();
-        // foreach (var customer in customers) customer.UpdateState();
     }
 }
