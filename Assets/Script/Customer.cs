@@ -1,10 +1,9 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class Customer : MonoBehaviour
 {
-    private enum State { LookingForTable, WaitingForOrder, Eating, Leaving }
+    private enum State { LookingForTable, WaitingForOrder, WaitingForFood, Eating, Leaving }
     private State currentState = State.LookingForTable;
     private Table assignedTable;
     private Order currentOrder;
@@ -18,6 +17,10 @@ public class Customer : MonoBehaviour
     private GameObject orderInstance;
 
     public Vector3 spawnPosition; // Position where the customer spawns (e.g., a corner)
+    public GameObject doorPrefab;  // Drag the door prefab here in the Inspector
+    private Vector3 doorPosition;  // Position of the door prefab in the scene
+
+    public WaitStaff assignedWaitStaff; // Reference to the assigned WaitStaff
 
     public void SetMenu(List<Order> availableMenu)
     {
@@ -32,7 +35,16 @@ public class Customer : MonoBehaviour
             spawnPosition = new Vector3(-10, 0, 10); // Top-left corner
         }
 
-        transform.position = spawnPosition; // Spawn the customer at the corner
+        // Spawn the customer at the specified spawn position
+        transform.position = spawnPosition;
+
+        // Check that the door prefab is assigned and set the door position
+        if (doorPrefab == null)
+        {
+            Debug.LogError("Door prefab is not assigned!");
+            return;
+        }
+        doorPosition = doorPrefab.transform.position; // Use the prefab's position as the exit target
 
         if (orderPrefab == null)
         {
@@ -40,7 +52,7 @@ public class Customer : MonoBehaviour
             return;
         }
 
-        // Instantiate the prefab
+        // Instantiate the order prefab above the customer and hide it initially
         orderInstance = Instantiate(orderPrefab, transform.position + new Vector3(0, 1, 0), Quaternion.identity, transform);
         orderInstance.gameObject.SetActive(false); // Initially hide
     }
@@ -75,6 +87,10 @@ public class Customer : MonoBehaviour
                 break;
 
             case State.WaitingForOrder:
+                ShowOrder(); // Show order logic
+                break;
+
+            case State.WaitingForFood:
                 WaitForOrder();
                 break;
 
@@ -83,7 +99,7 @@ public class Customer : MonoBehaviour
                 break;
 
             case State.Leaving:
-                Leave();
+                MoveToDoor();
                 break;
         }
     }
@@ -128,12 +144,41 @@ public class Customer : MonoBehaviour
         orderObject.transform.SetParent(transform); // Attach the prefab to the customer for proper positioning
     }
 
+    // Call the assigned waitstaff to take the order
+    public Order GiveOrderToWaitStaff()
+    {
+        // Ensure the customer has an order ready to give
+        if (currentOrder != null)
+        {
+            return currentOrder;  // Return the current order to the WaitStaff
+        }
+        else
+        {
+            Debug.LogWarning("Customer has no order to give.");
+            return null;
+        }
+    }
+
     private void WaitForOrder()
     {
-        if (currentOrder != null && currentState == State.WaitingForOrder)
-        {
-            StartEating();
-        }
+        // Waiting logic (e.g., animations, countdown, etc.) can go here
+        // Once food arrives, switch to Eating
+        StartEating();
+    }
+
+    public bool IsReadyToOrder()
+    {
+        return currentState == State.WaitingForOrder;
+    }
+
+    public void SetStateWaitingForFood()
+    {
+        currentState = State.WaitingForFood;
+    }
+
+    public void SetAssignedWaitStaff(WaitStaff waitStaff)
+    {
+        assignedWaitStaff = waitStaff;
     }
 
     private void StartEating()
@@ -153,12 +198,20 @@ public class Customer : MonoBehaviour
         }
     }
 
-    private void Leave()
+    private void MoveToDoor()
     {
-        if (assignedTable != null)
+        // Move towards the door's position (from door prefab)
+        float step = 3f * Time.deltaTime; // Adjust the speed of movement to the door
+        transform.position = Vector3.MoveTowards(transform.position, doorPosition, step);
+
+        // If the customer reaches the door position, remove them
+        if (transform.position == doorPosition)
         {
-            assignedTable.Vacate(); // Free up the table
+            if (assignedTable != null)
+            {
+                assignedTable.Vacate(); // Free up the table
+            }
+            Destroy(gameObject); // Remove customer from scene
         }
-        Destroy(gameObject); // Remove customer from scene
     }
 }
