@@ -2,17 +2,24 @@ using UnityEngine;
 
 public class WaitStaff : MonoBehaviour
 {
-    private enum State { Idle, Cleaning, Serving, TakingOrder }
+    private enum State { Idle, Cleaning, Serving, TakingOrder, MovingToChef }
     private State currentState = State.Idle;
 
     private Table targetTable;
     private Customer targetCustomer;
 
+    private Chef chef;  // Reference to the Chef
+
     public float moveSpeed = 3f; // Movement speed of the waitstaff
+
+    void Start()
+    {
+        chef = FindObjectOfType<Chef>();  // Find the first Chef in the scene
+    }
 
     void Update()
     {
-        UpdateState();
+        UpdateState();  // Update the state of the WaitStaff
     }
 
     void UpdateState()
@@ -30,6 +37,9 @@ public class WaitStaff : MonoBehaviour
                 break;
             case State.TakingOrder:
                 MoveToCustomer();
+                break;
+            case State.MovingToChef:
+                MoveToChef();
                 break;
         }
     }
@@ -115,8 +125,8 @@ public class WaitStaff : MonoBehaviour
             {
                 Debug.Log($"WaitStaff received the order for {order.DishPrefab.name} from customer {targetCustomer.gameObject.name}");
 
-                // Update the customer state to WaitingForFood
-                targetCustomer.SetStateWaitingForFood();
+                // Move to the Chef to give the order
+                currentState = State.MovingToChef;
             }
             else
             {
@@ -125,8 +135,49 @@ public class WaitStaff : MonoBehaviour
         }
 
         // Reset the state after taking the order
-        currentState = State.Idle;
         targetCustomer = null;
+    }
+
+    void MoveToChef()
+    {
+        if (chef == null)
+        {
+            currentState = State.Idle;
+            return;
+        }
+
+        // Move towards the Chef's position
+        float step = moveSpeed * Time.deltaTime;
+        transform.position = Vector3.MoveTowards(transform.position, chef.transform.position, step);
+
+        // Check if the waitstaff has reached the Chef
+        if (Vector3.Distance(transform.position, chef.transform.position) < 0.1f)
+        {
+            GiveOrderToChef();
+        }
+    }
+
+    void GiveOrderToChef()
+    {
+        // Ensure you have a valid order
+        if (targetCustomer != null && targetCustomer.IsReadyToOrder())
+        {
+            Order order = targetCustomer.GiveOrderToWaitStaff();
+            if (order != null)
+            {
+                // Pass the order to the chef
+                chef.ReceiveOrder(order);
+                Debug.Log("WaitStaff gave the order to Chef.");
+            }
+            else
+            {
+                Debug.LogWarning("Failed to retrieve order from customer.");
+            }
+
+            // After giving the order, reset and return to idle state
+            targetCustomer = null;
+            currentState = State.Idle;
+        }
     }
 
 
@@ -162,12 +213,5 @@ public class WaitStaff : MonoBehaviour
     {
         // Code to serve food to a customer (implementation pending)
         currentState = State.Idle;
-    }
-
-    public void TakeOrder(Order order, Customer customer)
-    {
-        // Handle taking the order and associating the customer with it
-        targetCustomer = customer;
-        targetCustomer.GiveOrderToWaitStaff(); // Communicate order to staff
     }
 }

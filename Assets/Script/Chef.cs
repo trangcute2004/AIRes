@@ -4,12 +4,30 @@ using UnityEngine;
 
 public class Chef : MonoBehaviour
 {
-    private Queue<Order> orderQueue;
-    private Order currentOrder;
-    private float cookingTime;
+    private Queue<Order> orderQueue; // Holds orders to be processed
+    private Order currentOrder; // Current order being cooked
+    private float cookingTime; // Time remaining to finish cooking
+    private GameObject cookingDishInstance; // Current dish prefab being shown in the scene
 
-    private enum State { Idle, Cooking, WaitingForOrder }
+    private enum State { Idle, Cooking, WaitingForOrder, MovingToPot }
     private State currentState;
+
+    public Transform saladPot; // Reference to the Salad Pot
+    public Transform burgerPot; // Reference to the Burger Pot
+    public Transform pizzaPot; // Reference to the Pizza Pot
+
+    private Transform targetPot; // Target pot to move to
+
+    void Start()
+    {
+        orderQueue = new Queue<Order>();  // Initialize order queue
+        currentState = State.Idle;
+    }
+
+    void Update()
+    {
+        UpdateState();  // Update the current state of the chef
+    }
 
     void UpdateState()
     {
@@ -18,38 +36,106 @@ public class Chef : MonoBehaviour
             case State.Idle:
                 if (orderQueue.Count > 0)
                 {
+                    // Process next order in the queue
                     currentOrder = orderQueue.Dequeue();
-                    cookingTime = currentOrder.GetPreparationTime();
-                    currentState = State.Cooking;
+                    cookingTime = currentOrder.GetPreparationTime();  // Set cooking time based on the order
+                    currentState = State.MovingToPot;  // Chef needs to move to the pot
+                    SetTargetPot(currentOrder);  // Set the correct pot to move to
                 }
                 break;
-            case State.Cooking:
-                Cook();
+
+            case State.MovingToPot:
+                MoveToPot();  // Move to the designated pot
                 break;
+
+            case State.Cooking:
+                Cook();  // Continue cooking the current dish
+                break;
+
             case State.WaitingForOrder:
-                // Wait for next order
+                // Waiting for the next order
                 break;
         }
     }
 
+    // Method to set the correct target pot based on the order
+    void SetTargetPot(Order order)
+    {
+        switch (order.DishName)
+        {
+            case "Salad":
+                targetPot = saladPot;
+                break;
+            case "Burger":
+                targetPot = burgerPot;
+                break;
+            case "Pizza":
+                targetPot = pizzaPot;
+                break;
+            default:
+                targetPot = null;
+                break;
+        }
+    }
+
+    // Method to move the chef towards the target pot
+    void MoveToPot()
+    {
+        if (targetPot != null)
+        {
+            // Move the chef towards the target pot
+            float step = 3f * Time.deltaTime; // Speed of movement
+            transform.position = Vector3.MoveTowards(transform.position, targetPot.position, step);
+
+            // When chef reaches the pot
+            if (Vector3.Distance(transform.position, targetPot.position) < 0.1f)
+            {
+                currentState = State.Cooking;  // Start cooking once at the pot
+                PrepareDish(currentOrder);  // Show the dish in the scene while cooking
+            }
+        }
+        else
+        {
+            Debug.LogError("Target pot not set! Check your order system.");
+        }
+    }
+
+    void PrepareDish(Order order)
+    {
+        // Remove any previously instantiated dish
+        if (cookingDishInstance != null)
+        {
+            Destroy(cookingDishInstance);
+        }
+
+        // Instantiate the dish prefab and show it in the scene at the pot position
+        cookingDishInstance = Instantiate(order.DishPrefab, targetPot.position, Quaternion.identity);
+    }
+
     void Cook()
     {
-        cookingTime -= Time.deltaTime;
+        cookingTime -= Time.deltaTime;  // Decrease cooking time
+
         if (cookingTime <= 0)
         {
-            NotifyWaitStaff(currentOrder);
-            currentState = State.Idle;
+            NotifyWaitStaff(currentOrder);  // Notify the waiter when the dish is ready
+            Destroy(cookingDishInstance);  // Remove the dish from the scene
+            currentState = State.Idle;  // Return to idle state after cooking
         }
     }
 
     public void ReceiveOrder(Order order)
     {
-        orderQueue.Enqueue(order);
+        orderQueue.Enqueue(order);  // Add the received order to the queue
+        Debug.Log($"Chef received order for {order.DishName}");
     }
 
+
+    // Method to notify wait staff when the dish is ready
     void NotifyWaitStaff(Order order)
     {
-        // Notify wait staff that the order is ready
+        // You can replace this with an actual notification system to inform the wait staff
+        // For now, just log to the console for testing
+        Debug.Log($"Chef finished cooking {order.DishName}. Notifying the WaitStaff.");
     }
 }
-

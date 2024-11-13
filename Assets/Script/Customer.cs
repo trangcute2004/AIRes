@@ -87,7 +87,7 @@ public class Customer : MonoBehaviour
                 break;
 
             case State.WaitingForOrder:
-                ShowOrder(); // Show order logic
+                // Customer is at the table, no need to randomize the order again
                 break;
 
             case State.WaitingForFood:
@@ -116,12 +116,13 @@ public class Customer : MonoBehaviour
         if (transform.position == assignedTable.transform.position)
         {
             currentState = State.WaitingForOrder;
-            ShowOrder(); // Show the order once at the table
+            // Show a random order once the customer reaches the table
+            ShowRandomOrder();
         }
     }
 
-    // Show a random order (instead of always the first one)
-    public void ShowOrder()
+    // Show a random order (instead of always the first one) when the customer reaches the table
+    public void ShowRandomOrder()
     {
         if (menu.Count == 0)
         {
@@ -129,19 +130,22 @@ public class Customer : MonoBehaviour
             return;
         }
 
-        // Randomly pick an order from the menu
-        currentOrder = menu[Random.Range(0, menu.Count)];
-
-        // Check if the current order's DishPrefab is assigned
-        if (currentOrder.DishPrefab == null)
+        // Randomly pick an order from the menu if not already assigned
+        if (currentOrder == null)
         {
-            Debug.LogError("DishPrefab is not assigned for the current order!");
-            return;
-        }
+            currentOrder = menu[Random.Range(0, menu.Count)];
 
-        // Instantiate the prefab associated with the order
-        GameObject orderObject = Instantiate(currentOrder.DishPrefab, transform.position + new Vector3(0, 2, 0), Quaternion.identity);
-        orderObject.transform.SetParent(transform); // Attach the prefab to the customer for proper positioning
+            // Check if the current order's DishPrefab is assigned
+            if (currentOrder.DishPrefab == null)
+            {
+                Debug.LogError("DishPrefab is not assigned for the current order!");
+                return;
+            }
+
+            // Instantiate the prefab associated with the order
+            GameObject orderObject = Instantiate(currentOrder.DishPrefab, transform.position + new Vector3(0, 2, 0), Quaternion.identity);
+            orderObject.transform.SetParent(transform); // Attach the prefab to the customer for proper positioning
+        }
     }
 
     // Call the assigned waitstaff to take the order
