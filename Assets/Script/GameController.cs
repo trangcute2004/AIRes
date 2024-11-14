@@ -34,49 +34,36 @@ public class GameController : MonoBehaviour
 
     private void InitializeMenu()
     {
-        Debug.Log("Initializing menu...");
-        menu.Clear(); // Ensure the menu is empty before adding new items
+        menu.Clear(); // Ensure the menu starts empty
 
-        // Add Burger
         if (burgerPrefab != null)
         {
             menu.Add(new Order("Burger", 5.0f, burgerPrefab));
-            Debug.Log($"Added Burger to menu. Prefab: {burgerPrefab.name}");
+            Debug.Log("Added Burger to the menu.");
         }
         else
         {
-            Debug.LogError("Burger prefab is missing! Check GameController Inspector.");
+            Debug.LogError("Burger prefab is missing.");
         }
 
-        // Add Pizza
-        if (pizzaPrefab != null)
-        {
-            menu.Add(new Order("Pizza", 10.0f, pizzaPrefab));
-            Debug.Log($"Added Pizza to menu. Prefab: {pizzaPrefab.name}");
-        }
-        else
-        {
-            Debug.LogError("Pizza prefab is missing! Check GameController Inspector.");
-        }
-
-        // Add Salad
         if (saladPrefab != null)
         {
             menu.Add(new Order("Salad", 3.0f, saladPrefab));
-            Debug.Log($"Added Salad to menu. Prefab: {saladPrefab.name}");
+            Debug.Log("Added Salad to the menu.");
         }
         else
         {
-            Debug.LogError("Salad prefab is missing! Check GameController Inspector.");
+            Debug.LogError("Salad prefab is missing.");
         }
 
-        if (menu.Count == 0)
+        if (pizzaPrefab != null)
         {
-            Debug.LogError("Menu initialization failed. No valid items were added. Check prefab assignments.");
+            menu.Add(new Order("Pizza", 10.0f, pizzaPrefab));
+            Debug.Log("Added Pizza to the menu.");
         }
         else
         {
-            Debug.Log($"Menu initialized successfully with {menu.Count} items.");
+            Debug.LogError("Pizza prefab is missing.");
         }
     }
 
@@ -99,7 +86,10 @@ public class GameController : MonoBehaviour
             waiter.chefLocation = chef?.transform;
         }
     }
-
+    private void Update()
+    {
+        SpawnCustomer();
+    }
     private void SpawnCustomer()
     {
         if (customerPrefab == null)
@@ -108,6 +98,7 @@ public class GameController : MonoBehaviour
             return;
         }
 
+        // Instantiate a new customer
         GameObject customerObject = Instantiate(customerPrefab, spawnPosition, Quaternion.identity);
         Customer customer = customerObject.GetComponent<Customer>();
 
@@ -117,30 +108,20 @@ public class GameController : MonoBehaviour
             return;
         }
 
-        // Validate the menu
-        Debug.Log("Validating menu before passing to customer...");
-        List<Order> validMenu = new List<Order>();
-        foreach (var order in menu)
+        // Debug the menu content
+        if (menu == null || menu.Count == 0)
         {
-            if (order == null || order.DishPrefab == null)
-            {
-                Debug.LogError($"Invalid order in menu. DishPrefab is null for order {order?.DishName ?? "null"}. Skipping this order.");
-                continue;
-            }
-            validMenu.Add(order);
-        }
-
-        if (validMenu.Count == 0)
-        {
-            Debug.LogError("No valid orders available in the menu. Cannot assign menu to customer.");
+            Debug.LogError("Menu is not initialized or empty. Ensure it is populated in GameController.");
             return;
         }
 
-        customer.SetMenu(validMenu); // Pass the validated menu to the customer
-        customer.FindTable(tables); // Assign a table to the customer
+        // Assign the menu to the customer
+        Debug.Log($"Assigning menu with {menu.Count} items to customer {customerObject.name}.");
+        customer.SetMenu(menu);
 
-        Debug.Log($"Customer {customer.gameObject.name} spawned and assigned a menu with {validMenu.Count} items.");
+        // Assign a table to the customer
+        customer.FindTable(tables);
     }
 
-
 }
+

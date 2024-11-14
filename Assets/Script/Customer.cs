@@ -26,19 +26,8 @@ public class Customer : MonoBehaviour
             return;
         }
 
-        // Validate that all orders have valid DishPrefabs
-        for (int i = 0; i < availableMenu.Count; i++)
-        {
-            var order = availableMenu[i];
-            if (order == null || order.DishPrefab == null)
-            {
-                Debug.LogError($"Invalid order in menu for Customer {gameObject.name}. Order at index {i} has a null DishPrefab. Skipping this order.");
-                continue;
-            }
-        }
-
         menu = new List<Order>(availableMenu);
-        Debug.Log($"Customer {gameObject.name} received a valid menu with {menu.Count} items.");
+        Debug.Log($"Customer {gameObject.name} received a menu with {menu.Count} items.");
     }
 
 
@@ -117,32 +106,31 @@ public class Customer : MonoBehaviour
         }
     }
 
-
-
     private void ShowRandomOrder()
     {
         if (menu == null || menu.Count == 0)
         {
-            Debug.LogError($"Menu is empty or not initialized for Customer {gameObject.name}. Ensure the GameController sets it.");
+            Debug.LogError($"Menu is empty for Customer {gameObject.name}. Ensure the menu is set in the GameController.");
             return;
         }
 
-        // Randomly select a dish
-        currentOrder = menu[Random.Range(0, menu.Count)];
+        // Random selection
+        int randomIndex = Random.Range(0, menu.Count);
+        currentOrder = menu[randomIndex];
+
         if (currentOrder?.DishPrefab == null)
         {
-            Debug.LogError($"Selected order or its prefab is null for Customer {gameObject.name}. Check GameController menu setup.");
+            Debug.LogError($"Selected order is null or its prefab is missing for Customer {gameObject.name}. Check menu setup.");
             return;
         }
 
         Debug.Log($"Customer {gameObject.name} selected: {currentOrder.DishName}");
 
-        // Instantiate the dish prefab at the table
+        // Instantiate the dish
         if (assignedTable != null)
         {
-            Vector3 dishPosition = assignedTable.transform.position + Vector3.up * 2; // Slightly above the table
+            Vector3 dishPosition = assignedTable.transform.position + Vector3.up * 1.5f; // Adjust height if needed
             dishInstance = Instantiate(currentOrder.DishPrefab, dishPosition, Quaternion.identity);
-            Debug.Log($"Dish {currentOrder.DishName} has been instantiated at the table for Customer {gameObject.name}.");
         }
     }
 

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using UnityEngine;
 
 public class Order : MonoBehaviour
@@ -8,13 +9,9 @@ public class Order : MonoBehaviour
     public float PreparationTime { get; private set; }
     public GameObject DishPrefab { get; private set; }
 
-    public Order(string dishName, float preparationTime, GameObject dishPrefab)
+    public Order(string dishName, float price, GameObject dishPrefab)
     {
-        if (string.IsNullOrEmpty(dishName)) throw new System.ArgumentNullException(nameof(dishName));
-        if (dishPrefab == null) throw new System.ArgumentNullException(nameof(dishPrefab));
-
         DishName = dishName;
-        PreparationTime = preparationTime;
         DishPrefab = dishPrefab;
     }
 
