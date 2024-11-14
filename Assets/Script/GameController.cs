@@ -1,4 +1,3 @@
-
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -20,12 +19,9 @@ public class GameController : MonoBehaviour
 
     void Start()
     {
-        void Start()
-        {
-            Debug.Log($"Burger Prefab: {burgerPrefab?.name}");
-            Debug.Log($"Pizza Prefab: {pizzaPrefab?.name}");
-            Debug.Log($"Salad Prefab: {saladPrefab?.name}");
-        }
+        Debug.Log($"Burger Prefab: {burgerPrefab?.name}");
+        Debug.Log($"Pizza Prefab: {pizzaPrefab?.name}");
+        Debug.Log($"Salad Prefab: {saladPrefab?.name}");
 
         InitializeTables();  // Initialize tables (they should already exist in the scene)
         InitializeWaitStaff(); // Initialize wait staff (if needed)
@@ -34,98 +30,74 @@ public class GameController : MonoBehaviour
         InvokeRepeating("SpawnCustomer", 0, customerSpawnRate); // Repeatedly spawn customers
     }
 
-    // Initialize the menu items
     private void InitializeMenu()
     {
         Debug.Log("Initializing menu...");
 
+        // Clear the menu to prevent duplicate entries
+        menu.Clear();
+
+        // Validate and add burger
         if (burgerPrefab == null)
         {
-            Debug.LogError("Burger prefab is not assigned!");
+            Debug.LogError("Burger prefab is not assigned in the Inspector!");
         }
         else
         {
-            Debug.Log($"Burger prefab: {burgerPrefab.name}");
-        }
-
-        if (pizzaPrefab == null)
-        {
-            Debug.LogError("Pizza prefab is not assigned!");
-        }
-        else
-        {
-            Debug.Log($"Pizza prefab: {pizzaPrefab.name}");
-        }
-
-        if (saladPrefab == null)
-        {
-            Debug.LogError("Salad prefab is not assigned!");
-        }
-        else
-        {
-            Debug.Log($"Salad prefab: {saladPrefab.name}");
-        }
-
-        // Initialize the menu
-        menu = new List<Order>();
-
-        if (burgerPrefab != null)
-        {
+            Debug.Log($"Burger prefab detected: {burgerPrefab.name}");
             menu.Add(new Order("Burger", 5.0f, burgerPrefab));
         }
 
-        if (pizzaPrefab != null)
+        // Validate and add pizza
+        if (pizzaPrefab == null)
         {
+            Debug.LogError("Pizza prefab is not assigned in the Inspector!");
+        }
+        else
+        {
+            Debug.Log($"Pizza prefab detected: {pizzaPrefab.name}");
             menu.Add(new Order("Pizza", 10.0f, pizzaPrefab));
         }
 
-        if (saladPrefab != null)
+        // Validate and add salad
+        if (saladPrefab == null)
         {
+            Debug.LogError("Salad prefab is not assigned in the Inspector!");
+        }
+        else
+        {
+            Debug.Log($"Salad prefab detected: {saladPrefab.name}");
             menu.Add(new Order("Salad", 3.0f, saladPrefab));
         }
 
+        // Log final menu
+        Debug.Log($"Menu initialized with {menu.Count} items.");
         foreach (var order in menu)
         {
-            if (order == null || order.DishPrefab == null)
-            {
-                Debug.LogError($"Invalid order detected in the menu: {order?.DishName ?? "null"}");
-            }
-            else
-            {
-                Debug.Log($"Order added to menu: {order.DishName}, Prefab: {order.DishPrefab.name}");
-            }
+            Debug.Log($"Order added to menu: {order.DishName}, Prefab: {order.DishPrefab?.name ?? "null"}");
         }
-
-        Debug.Log($"Menu initialized with {menu.Count} items.");
     }
 
 
-    // Initialize existing tables (find all Table objects in the scene)
     private void InitializeTables()
     {
-        // Find all tables in the scene and add them to the tables list
         tables = new List<Table>(FindObjectsOfType<Table>());
     }
 
-    // Method to initialize the chef (optional)
     private void InitializeChef()
     {
-        chef = FindObjectOfType<Chef>(); // Assuming there's one chef in the scene
+        chef = FindObjectOfType<Chef>();
     }
 
-    // Method to initialize the wait staff (optional)
     private void InitializeWaitStaff()
     {
         waitStaff = new List<WaitStaff>(FindObjectsOfType<WaitStaff>());
-
         foreach (var waiter in waitStaff)
         {
-            waiter.chefLocation = chef.transform; // Assign chef location
+            waiter.chefLocation = chef?.transform;
         }
     }
 
-
-    // Method to spawn a new customer at the spawn position
     private void SpawnCustomer()
     {
         if (customerPrefab == null)
@@ -149,31 +121,9 @@ public class GameController : MonoBehaviour
             return;
         }
 
-        customer.SetMenu(menu); // Pass the menu to the customer
-        customer.FindTable(tables); // Assign a table to the customer
+        customer.SetMenu(menu);
+        customer.FindTable(tables);
 
         Debug.Log($"Customer {customer.gameObject.name} spawned and assigned a menu with {menu.Count} items.");
     }
-
-    WaitStaff FindAvailableWaitStaff()
-    {
-        foreach (var waiter in waitStaff)
-        {
-            if (waiter.IsIdle()) // Implement IsIdle in WaitStaff
-            {
-                return waiter;
-            }
-        }
-        Debug.LogWarning("No available waitstaff found!");
-        return null;
-    }
-
-    void Update()
-    {
-        // Here you can update other game elements like state management for customers, chefs, etc.
-        // For instance, updating state for WaitStaff, Chef, and Customers
-    }
-
-
-
 }

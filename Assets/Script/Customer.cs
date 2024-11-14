@@ -32,11 +32,16 @@ public class Customer : MonoBehaviour
             {
                 Debug.LogError($"Invalid order detected in the menu for Customer {gameObject.name}: {order?.DishName ?? "null"}");
             }
+            else
+            {
+                Debug.Log($"Valid order for Customer {gameObject.name}: {order.DishName}, Prefab: {order.DishPrefab.name}");
+            }
         }
 
         menu = availableMenu;
         Debug.Log($"Customer {gameObject.name} received a menu with {menu.Count} items.");
     }
+
 
 
 
@@ -135,14 +140,19 @@ public class Customer : MonoBehaviour
             return;
         }
 
-        // Assign a unique order instance to the customer
+        // Assign the selected order to the customer
         currentOrder = new Order(selectedOrder.DishName, selectedOrder.PreparationTime, selectedOrder.DishPrefab);
         Debug.Log($"Customer {gameObject.name} has selected: {currentOrder.DishName}");
 
-        // Instantiate the dish prefab
-        dishInstance = Instantiate(currentOrder.DishPrefab, assignedTable.transform.position + new Vector3(0, 1, 0), Quaternion.identity);
-        Debug.Log($"Dish {currentOrder.DishName} has been instantiated for Customer {gameObject.name}.");
+        // Instantiate the dish prefab at the table
+        if (assignedTable != null)
+        {
+            Vector3 dishPosition = assignedTable.transform.position + new Vector3(0, 1, 0); // Slightly above the table
+            dishInstance = Instantiate(currentOrder.DishPrefab, dishPosition, Quaternion.identity);
+            Debug.Log($"Dish {currentOrder.DishName} has been instantiated at the table for Customer {gameObject.name}.");
+        }
     }
+
 
 
     public Order GiveOrderToWaitStaff()
@@ -214,9 +224,17 @@ public class Customer : MonoBehaviour
             {
                 assignedTable.Vacate();
             }
+
+            // Destroy dish instance when customer leaves
+            if (dishInstance != null)
+            {
+                Destroy(dishInstance);
+            }
+
             Destroy(gameObject);
         }
     }
+
 
     public void SetAssignedWaitStaff(WaitStaff waitStaff)
     {

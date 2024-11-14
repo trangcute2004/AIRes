@@ -8,7 +8,6 @@ public class Order : MonoBehaviour
     public float PreparationTime { get; private set; }
     public GameObject DishPrefab { get; private set; } // The prefab representing the dish
 
-    // Constructor to initialize the order with dish name, preparation time, and prefab
     public Order(string dishName, float preparationTime, GameObject dishPrefab)
     {
         if (string.IsNullOrEmpty(dishName))
@@ -20,14 +19,12 @@ public class Order : MonoBehaviour
         {
             Debug.LogError($"Dish prefab is null for {dishName ?? "unknown"}.");
         }
-        else
-        {
-            Debug.Log($"Dish prefab assigned: {dishPrefab.name}");
-        }
 
         DishName = dishName;
         PreparationTime = preparationTime;
         DishPrefab = dishPrefab;
+
+        Debug.Log($"Order created: {DishName}, Prefab: {DishPrefab?.name ?? "null"}");
     }
 
 
