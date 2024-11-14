@@ -11,17 +11,19 @@ public class GameController : MonoBehaviour
     public GameObject customerPrefab; // Customer prefab
     public Vector3 spawnPosition; // Position where customers will spawn
     public int customerSpawnRate; // Rate at which customers spawn
-    [SerializeField] private GameObject burgerPrefab;
-    [SerializeField] private GameObject pizzaPrefab;
-    [SerializeField] private GameObject saladPrefab;
+    [SerializeField] public GameObject burgerPrefab;
+    [SerializeField] public GameObject pizzaPrefab;
+    [SerializeField] public GameObject saladPrefab;
 
     private List<Order> menu = new List<Order>(); // Declare the menu list here
 
     void Start()
     {
-        Debug.Log($"Burger Prefab: {burgerPrefab?.name}");
-        Debug.Log($"Pizza Prefab: {pizzaPrefab?.name}");
-        Debug.Log($"Salad Prefab: {saladPrefab?.name}");
+        if (customerPrefab == null)
+        {
+            Debug.LogError("Customer prefab is missing. Please assign it in the inspector.");
+            return;
+        }
 
         InitializeTables();  // Initialize tables (they should already exist in the scene)
         InitializeWaitStaff(); // Initialize wait staff (if needed)
@@ -33,46 +35,51 @@ public class GameController : MonoBehaviour
     private void InitializeMenu()
     {
         Debug.Log("Initializing menu...");
-        menu.Clear(); // Ensure the menu starts empty
+        menu.Clear(); // Ensure the menu is empty before adding new items
 
-        // Add burger order
+        // Add Burger
         if (burgerPrefab != null)
         {
-            var burgerOrder = new Order("Burger", 5.0f, burgerPrefab);
-            menu.Add(burgerOrder);
-            Debug.Log($"Order created: {burgerOrder.DishName}, Prefab: {burgerOrder.DishPrefab.name}");
+            menu.Add(new Order("Burger", 5.0f, burgerPrefab));
+            Debug.Log($"Added Burger to menu. Prefab: {burgerPrefab.name}");
         }
         else
         {
-            Debug.LogWarning("Burger prefab is not assigned!");
+            Debug.LogError("Burger prefab is missing! Check GameController Inspector.");
         }
 
-        // Add pizza order
+        // Add Pizza
         if (pizzaPrefab != null)
         {
-            var pizzaOrder = new Order("Pizza", 10.0f, pizzaPrefab);
-            menu.Add(pizzaOrder);
-            Debug.Log($"Order created: {pizzaOrder.DishName}, Prefab: {pizzaOrder.DishPrefab.name}");
+            menu.Add(new Order("Pizza", 10.0f, pizzaPrefab));
+            Debug.Log($"Added Pizza to menu. Prefab: {pizzaPrefab.name}");
         }
         else
         {
-            Debug.LogWarning("Pizza prefab is not assigned!");
+            Debug.LogError("Pizza prefab is missing! Check GameController Inspector.");
         }
 
-        // Add salad order
+        // Add Salad
         if (saladPrefab != null)
         {
-            var saladOrder = new Order("Salad", 3.0f, saladPrefab);
-            menu.Add(saladOrder);
-            Debug.Log($"Order created: {saladOrder.DishName}, Prefab: {saladOrder.DishPrefab.name}");
+            menu.Add(new Order("Salad", 3.0f, saladPrefab));
+            Debug.Log($"Added Salad to menu. Prefab: {saladPrefab.name}");
         }
         else
         {
-            Debug.LogWarning("Salad prefab is not assigned!");
+            Debug.LogError("Salad prefab is missing! Check GameController Inspector.");
         }
 
-        Debug.Log($"Menu initialized with {menu.Count} items.");
+        if (menu.Count == 0)
+        {
+            Debug.LogError("Menu initialization failed. No valid items were added. Check prefab assignments.");
+        }
+        else
+        {
+            Debug.Log($"Menu initialized successfully with {menu.Count} items.");
+        }
     }
+
 
     private void InitializeTables()
     {
@@ -110,15 +117,30 @@ public class GameController : MonoBehaviour
             return;
         }
 
-        if (menu == null || menu.Count == 0)
+        // Validate the menu
+        Debug.Log("Validating menu before passing to customer...");
+        List<Order> validMenu = new List<Order>();
+        foreach (var order in menu)
         {
-            Debug.LogError("Menu is not initialized or is empty. Ensure InitializeMenu is called first.");
+            if (order == null || order.DishPrefab == null)
+            {
+                Debug.LogError($"Invalid order in menu. DishPrefab is null for order {order?.DishName ?? "null"}. Skipping this order.");
+                continue;
+            }
+            validMenu.Add(order);
+        }
+
+        if (validMenu.Count == 0)
+        {
+            Debug.LogError("No valid orders available in the menu. Cannot assign menu to customer.");
             return;
         }
 
-        customer.SetMenu(menu); // Pass the menu to the customer
+        customer.SetMenu(validMenu); // Pass the validated menu to the customer
         customer.FindTable(tables); // Assign a table to the customer
 
-        Debug.Log($"Customer {customer.gameObject.name} spawned and assigned a menu with {menu.Count} items.");
+        Debug.Log($"Customer {customer.gameObject.name} spawned and assigned a menu with {validMenu.Count} items.");
     }
+
+
 }

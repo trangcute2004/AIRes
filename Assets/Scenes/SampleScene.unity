@@ -401,9 +401,9 @@ MonoBehaviour:
   customerPrefab: {fileID: 8881497008709236388, guid: 0c8bf88fbdef620499d3c46c9072b18c, type: 3}
   spawnPosition: {x: 0, y: 0, z: 0}
   customerSpawnRate: 2
-  burgerPrefab: {fileID: 2540620955278043759, guid: b8e804b9416d70c4ca413c3bf8b3f8c2, type: 3}
-  pizzaPrefab: {fileID: 8293311433826047338, guid: 5799d462a546982499f0f9f80b20e405, type: 3}
-  saladPrefab: {fileID: 8987616351417406036, guid: 551ee8c475deb0441b9fb3900bb83b53, type: 3}
+  burgerPrefab: {fileID: 8133430973538948628, guid: 15d5013fd6f5a684495ea1f42f190fef, type: 3}
+  pizzaPrefab: {fileID: 5045082804309660329, guid: 94ac41389ec82bd45927df69e73e9472, type: 3}
+  saladPrefab: {fileID: 5528717017803882264, guid: e4058678f98bb1245926d2b18c874c79, type: 3}
 --- !u!4 &1044838750
 Transform:
   m_ObjectHideFlags: 0
