@@ -2,114 +2,43 @@ using UnityEngine;
 
 public class WaitStaff : MonoBehaviour
 {
-    private enum State { Idle, Cleaning, Serving, TakingOrder, MovingToChef }
+    private enum State { Idle, TakingOrder, DeliveringOrder }
     private State currentState = State.Idle;
 
-    private Table targetTable;
     private Customer targetCustomer;
-    private GameObject heldOrderPrefab;
-
-    private Chef chef;  // Reference to the Chef
-    public Transform orderCarryPosition; // Position where the order prefab will be placed
-    public float moveSpeed = 3f; // Movement speed of the waitstaff
     private Order currentOrder;
+    public float moveSpeed = 3f;
+    public Transform chefLocation;
 
+    private GameObject heldDishInstance; // To visually represent the dish being carried
 
-
-    void Start()
+    private void Update()
     {
-        chef = FindObjectOfType<Chef>();  // Find the first Chef in the scene
+        UpdateState();
     }
 
-    void Update()
+    private void UpdateState()
     {
-        UpdateState();  // Update the state of the WaitStaff
-    }
-
-    void UpdateState()
-    {
-        Debug.Log($"WaitStaff state: {currentState}");
         switch (currentState)
         {
             case State.Idle:
-                FindNextTask();
-                break;
-            case State.Cleaning:
-                MoveToTable();
-                break;
-            case State.Serving:
-                ServeOrder();
                 break;
             case State.TakingOrder:
                 MoveToCustomer();
                 break;
-            case State.MovingToChef:
+            case State.DeliveringOrder:
                 MoveToChef();
                 break;
-        }
-    }
-
-    public bool IsIdle()
-    {
-        return currentState == State.Idle;
-    }
-
-    void FindNextTask()
-    {
-        // Check if there are customers ready to place an order
-        Customer customerNeedingService = FindCustomerNeedingOrder();
-
-        if (customerNeedingService != null)
-        {
-            targetCustomer = customerNeedingService;
-            currentState = State.TakingOrder;
-        }
-        else
-        {
-            // Check for other tasks such as cleaning or serving orders if no customers need service
-            Table dirtyTable = FindDirtyTable();
-            if (dirtyTable != null)
-            {
-                targetTable = dirtyTable;
-                currentState = State.Cleaning;
-            }
         }
     }
 
     public void SetTargetCustomer(Customer customer)
     {
         targetCustomer = customer;
+        currentState = State.TakingOrder;
     }
 
-    Customer FindCustomerNeedingOrder()
-    {
-        // Find customers who are ready to order
-        Customer[] customers = FindObjectsOfType<Customer>();
-        foreach (var customer in customers)
-        {
-            if (customer.IsReadyToOrder())  // Checks if the customer is in the WaitingForOrder state
-            {
-                return customer;
-            }
-        }
-        return null;
-    }
-
-    Table FindDirtyTable()
-    {
-        // Find dirty tables that need cleaning
-        Table[] tables = FindObjectsOfType<Table>();
-        foreach (var table in tables)
-        {
-            if (table.IsDirty)
-            {
-                return table;
-            }
-        }
-        return null;
-    }
-
-    void MoveToCustomer()
+    private void MoveToCustomer()
     {
         if (targetCustomer == null)
         {
@@ -117,12 +46,10 @@ public class WaitStaff : MonoBehaviour
             return;
         }
 
-        // Move toward the customer's position
         float step = moveSpeed * Time.deltaTime;
         transform.position = Vector3.MoveTowards(transform.position, targetCustomer.transform.position, step);
 
-        // Check if the waitstaff has reached the customer
-        if (transform.position == targetCustomer.transform.position)
+        if (Vector3.Distance(transform.position, targetCustomer.transform.position) < 0.1f)
         {
             TakeOrderFromCustomer();
         }
@@ -130,127 +57,81 @@ public class WaitStaff : MonoBehaviour
 
     public void TakeOrderFromCustomer()
     {
-        if (targetCustomer == null)
+        if (targetCustomer == null || !targetCustomer.IsReadyToOrder())
         {
-            Debug.LogWarning("WaitStaff has no target customer.");
+            Debug.LogWarning("Customer is not ready to order or no customer is assigned.");
             currentState = State.Idle;
             return;
         }
 
-        if (!targetCustomer.IsReadyToOrder())
+        // Take the order from the customer
+        currentOrder = targetCustomer.GiveOrderToWaitStaff();
+        if (currentOrder != null)
         {
-            Debug.LogWarning($"Target customer {targetCustomer.gameObject.name} is not ready to order.");
-            currentState = State.Idle;
-            return;
-        }
-
-        // Retrieve the order
-        Order order = targetCustomer.GiveOrderToWaitStaff();
-
-        if (order != null)
-        {
-            Debug.Log($"WaitStaff received the order for {order.DishName} from customer {targetCustomer.gameObject.name}");
-            currentOrder = order; // Store the order for delivery
-            currentState = State.MovingToChef; // Proceed to deliver the order
-        }
-        else
-        {
-            Debug.LogWarning($"Failed to retrieve order from customer {targetCustomer.gameObject.name}.");
-            currentState = State.Idle;
+            Debug.Log($"Order received: {currentOrder.DishName}");
+            CreateHeldDish(currentOrder.DishPrefab); // Show the dish being carried
+            currentState = State.DeliveringOrder;
         }
     }
 
-
-    public void ReceiveOrder(Order order)
+    private void MoveToChef()
     {
-        if (order == null)
+        if (chefLocation == null)
         {
-            Debug.LogWarning("Received a null order.");
-            return;
-        }
-
-        currentOrder = order; // Store the order
-        Debug.Log($"WaitStaff received order for {order.DishPrefab.name}");
-
-        // Transition to the next task, e.g., moving to the chef
-        currentState = State.MovingToChef;
-    }
-
-
-    void MoveToChef()
-    {
-        if (chef == null)
-        {
+            Debug.LogError("Chef location is not set.");
             currentState = State.Idle;
             return;
         }
 
-        // Move towards the Chef's position
         float step = moveSpeed * Time.deltaTime;
-        transform.position = Vector3.MoveTowards(transform.position, chef.transform.position, step);
+        transform.position = Vector3.MoveTowards(transform.position, chefLocation.position, step);
 
-        // Check if the waitstaff has reached the Chef
-        if (Vector3.Distance(transform.position, chef.transform.position) < 0.1f)
+        if (Vector3.Distance(transform.position, chefLocation.position) < 0.1f)
         {
-            GiveOrderToChef();
+            DeliverOrderToChef();
         }
     }
 
-    void GiveOrderToChef()
+    private void DeliverOrderToChef()
     {
-        // Ensure you have a valid order
-        if (targetCustomer != null && targetCustomer.IsReadyToOrder())
+        if (chefLocation == null || currentOrder == null)
         {
-            Order order = targetCustomer.GiveOrderToWaitStaff();
-            if (order != null)
-            {
-                // Pass the order to the chef
-                chef.ReceiveOrder(order);
-                Debug.Log("WaitStaff gave the order to Chef.");
-            }
-            else
-            {
-                Debug.LogWarning("Failed to retrieve order from customer.");
-            }
-
-            // After giving the order, reset and return to idle state
-            targetCustomer = null;
-            currentState = State.Idle;
-        }
-    }
-
-
-    void MoveToTable()
-    {
-        if (targetTable == null)
-        {
+            Debug.LogError("Cannot deliver order: Missing chef location or order.");
             currentState = State.Idle;
             return;
         }
 
-        // Move towards the table's position
-        float step = moveSpeed * Time.deltaTime;
-        transform.position = Vector3.MoveTowards(transform.position, targetTable.transform.position, step);
-
-        // Check if the waitstaff has reached the table
-        if (transform.position == targetTable.transform.position)
+        Chef chef = chefLocation.GetComponent<Chef>();
+        if (chef != null)
         {
-            CleanTable();
+            chef.ReceiveOrder(currentOrder);
+            Debug.Log($"Order {currentOrder.DishName} delivered to chef.");
         }
+
+        Destroy(heldDishInstance); // Clean up the dish visual representation
+        currentOrder = null;
+        currentState = State.Idle;
     }
 
-    void CleanTable()
+    private void CreateHeldDish(GameObject dishPrefab)
     {
-        // Clean the table
-        targetTable.Clean();
+        if (dishPrefab == null)
+        {
+            Debug.LogError("Dish prefab is missing!");
+            return;
+        }
 
-        currentState = State.Idle;
-        targetTable = null; // Reset after cleaning the table
+        if (heldDishInstance != null)
+        {
+            Destroy(heldDishInstance); // Clean up any existing dish representation
+        }
+
+        heldDishInstance = Instantiate(dishPrefab, transform.position + Vector3.up, Quaternion.identity);
+        heldDishInstance.transform.parent = this.transform; // Attach to waitstaff
     }
 
-    void ServeOrder()
+    public bool IsIdle()
     {
-        // Code to serve food to a customer (implementation pending)
-        currentState = State.Idle;
+        return currentState == State.Idle;
     }
 }

@@ -5,22 +5,18 @@ public class Customer : MonoBehaviour
 {
     private enum State { LookingForTable, WaitingForOrder, WaitingForFood, Eating, Leaving }
     private State currentState = State.LookingForTable;
+    public string CurrentState => currentState.ToString();
+
     private Table assignedTable;
     private Order currentOrder;
-
     private float eatingDuration = 5f;
     private float eatingTimer;
-
     private List<Order> menu = new List<Order>();
+    private GameObject dishInstance;
 
-    public GameObject orderPrefab; // Drag Image prefab here (if using images)
-    private GameObject orderInstance;
-
-    public Vector3 spawnPosition; // Position where the customer spawns (e.g., a corner)
-    public GameObject doorPrefab;  // Drag the door prefab here in the Inspector
-    private Vector3 doorPosition;  // Position of the door prefab in the scene
-
-    public WaitStaff assignedWaitStaff; // Reference to the assigned WaitStaff
+    public GameObject doorPrefab;
+    private Vector3 doorPosition;
+    public WaitStaff assignedWaitStaff;
 
     public void SetMenu(List<Order> availableMenu)
     {
@@ -29,48 +25,13 @@ public class Customer : MonoBehaviour
 
     private void Start()
     {
-        // If spawn position is not set, default to the top-left corner
-        if (spawnPosition == Vector3.zero)
-        {
-            spawnPosition = new Vector3(-10, 0, 10); // Top-left corner
-        }
-
-        // Spawn the customer at the specified spawn position
-        transform.position = spawnPosition;
-
-        // Check that the door prefab is assigned and set the door position
         if (doorPrefab == null)
         {
-            Debug.LogError("Door prefab is not assigned!");
-            return;
-        }
-        doorPosition = doorPrefab.transform.position; // Use the prefab's position as the exit target
-
-        if (orderPrefab == null)
-        {
-            Debug.LogError("orderPrefab is not assigned!");
+            Debug.LogError("Door prefab is not assigned! Please assign it in the Inspector.");
             return;
         }
 
-        // Instantiate the order prefab above the customer and hide it initially
-        orderInstance = Instantiate(orderPrefab, transform.position + new Vector3(0, 1, 0), Quaternion.identity, transform);
-        orderInstance.gameObject.SetActive(false); // Initially hide
-    }
-
-    public void FindTable(List<Table> tables)
-    {
-        // Find the nearest available table
-        assignedTable = tables.Find(t => !t.IsOccupied && !t.IsDirty);
-
-        if (assignedTable != null)
-        {
-            assignedTable.Occupy();
-            currentState = State.LookingForTable; // Start moving towards the table
-        }
-        else
-        {
-            Debug.Log("No available tables for the customer.");
-        }
+        doorPosition = doorPrefab.transform.position;
     }
 
     private void Update()
@@ -78,29 +39,43 @@ public class Customer : MonoBehaviour
         UpdateState();
     }
 
-    public void UpdateState()
+    private void UpdateState()
     {
         switch (currentState)
         {
             case State.LookingForTable:
                 MoveToTable();
                 break;
-
             case State.WaitingForOrder:
-                // Customer is at the table, no need to randomize the order again
+                if (assignedWaitStaff != null && assignedWaitStaff.IsIdle())
+                {
+                    assignedWaitStaff.TakeOrderFromCustomer();
+                }
                 break;
-
             case State.WaitingForFood:
                 WaitForOrder();
                 break;
-
             case State.Eating:
                 Eat();
                 break;
-
             case State.Leaving:
                 MoveToDoor();
                 break;
+        }
+    }
+
+    public void FindTable(List<Table> tables)
+    {
+        assignedTable = tables.Find(t => !t.IsOccupied && !t.IsDirty);
+
+        if (assignedTable != null)
+        {
+            assignedTable.Occupy();
+            currentState = State.LookingForTable;
+        }
+        else
+        {
+            Debug.Log("No available tables for the customer.");
         }
     }
 
@@ -108,20 +83,16 @@ public class Customer : MonoBehaviour
     {
         if (assignedTable == null) return;
 
-        // Move towards the assigned table position
-        float step = 3f * Time.deltaTime; // Adjust the speed of movement
+        float step = 3f * Time.deltaTime;
         transform.position = Vector3.MoveTowards(transform.position, assignedTable.transform.position, step);
 
-        // If the customer reaches the table
-        if (transform.position == assignedTable.transform.position)
+        if (Vector3.Distance(transform.position, assignedTable.transform.position) < 0.1f)
         {
             currentState = State.WaitingForOrder;
-            // Show a random order once the customer reaches the table
             ShowRandomOrder();
         }
     }
 
-    // Show a random order (instead of always the first one) when the customer reaches the table
     public void ShowRandomOrder()
     {
         if (menu.Count == 0)
@@ -130,65 +101,51 @@ public class Customer : MonoBehaviour
             return;
         }
 
-        // Randomly pick an order from the menu if not already assigned
-        if (currentOrder == null)
+        currentOrder = menu[Random.Range(0, menu.Count)];
+        Debug.Log($"Customer {gameObject.name} has chosen: {currentOrder.DishName}");
+
+        if (currentOrder.DishPrefab != null)
         {
-            currentOrder = menu[Random.Range(0, menu.Count)];
-
-            // Check if the current order's DishPrefab is assigned
-            if (currentOrder.DishPrefab == null)
-            {
-                Debug.LogError("DishPrefab is not assigned for the current order!");
-                return;
-            }
-
-            // Instantiate the prefab associated with the order
-            GameObject orderObject = Instantiate(currentOrder.DishPrefab, transform.position + new Vector3(0, 2, 0), Quaternion.identity);
-            orderObject.transform.SetParent(transform); // Attach the prefab to the customer for proper positioning
-        }
-    }
-
-    // Call the assigned waitstaff to take the order
-    public Order GiveOrderToWaitStaff()
-    {
-        // Ensure the customer has an order ready to give
-        if (currentOrder != null)
-        {
-            return currentOrder;  // Return the current order to the WaitStaff
+            dishInstance = Instantiate(currentOrder.DishPrefab, assignedTable.transform.position + new Vector3(0, 1, 0), Quaternion.identity);
         }
         else
         {
-            Debug.LogWarning("Customer has no order to give.");
-            return null;
+            Debug.LogError($"Dish prefab for {currentOrder.DishName} is missing!");
         }
     }
 
-    private void WaitForOrder()
+    public Order GiveOrderToWaitStaff()
     {
-        // Waiting logic (e.g., animations, countdown, etc.) can go here
-        // Once food arrives, switch to Eating
-        StartEating();
+        if (currentState != State.WaitingForOrder || currentOrder == null)
+        {
+            Debug.LogWarning($"Customer is not ready to give an order. State: {currentState}, Order: {(currentOrder == null ? "None" : currentOrder.DishName)}");
+            return null;
+        }
+
+        Debug.Log($"Customer is giving order: {currentOrder.DishName}");
+        currentState = State.WaitingForFood;
+        return currentOrder;
     }
 
     public bool IsReadyToOrder()
     {
-        return currentState == State.WaitingForOrder;
+        return currentState == State.WaitingForOrder && currentOrder != null;
     }
 
-    public void SetStateWaitingForFood()
+    private void WaitForOrder()
     {
-        currentState = State.WaitingForFood;
-    }
-
-    public void SetAssignedWaitStaff(WaitStaff waitStaff)
-    {
-        assignedWaitStaff = waitStaff;
+        StartEating();
     }
 
     private void StartEating()
     {
         eatingTimer = eatingDuration;
         currentState = State.Eating;
+
+        if (dishInstance != null)
+        {
+            dishInstance.SetActive(true);
+        }
     }
 
     private void Eat()
@@ -198,24 +155,39 @@ public class Customer : MonoBehaviour
         if (eatingTimer <= 0f)
         {
             currentState = State.Leaving;
-            if (orderInstance != null) orderInstance.gameObject.SetActive(false); // Hide order image
+
+            if (dishInstance != null)
+            {
+                Destroy(dishInstance);
+            }
         }
     }
 
+
     private void MoveToDoor()
     {
-        // Move towards the door's position (from door prefab)
-        float step = 3f * Time.deltaTime; // Adjust the speed of movement to the door
+        if (doorPosition == Vector3.zero)
+        {
+            Debug.LogError("Door position is not set. Ensure doorPrefab is assigned correctly.");
+            return;
+        }
+
+        float step = 3f * Time.deltaTime;
         transform.position = Vector3.MoveTowards(transform.position, doorPosition, step);
 
-        // If the customer reaches the door position, remove them
-        if (transform.position == doorPosition)
+        if (Vector3.Distance(transform.position, doorPosition) < 0.1f)
         {
             if (assignedTable != null)
             {
-                assignedTable.Vacate(); // Free up the table
+                assignedTable.Vacate();
             }
-            Destroy(gameObject); // Remove customer from scene
+            Destroy(gameObject);
         }
+    }
+
+    public void SetAssignedWaitStaff(WaitStaff waitStaff)
+    {
+        assignedWaitStaff = waitStaff;
+        Debug.Log($"Assigned WaitStaff {waitStaff.gameObject.name} to Customer {gameObject.name}");
     }
 }

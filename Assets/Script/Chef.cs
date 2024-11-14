@@ -58,6 +58,19 @@ public class Chef : MonoBehaviour
         }
     }
 
+    public void ReceiveOrder(Order order)
+    {
+        if (order == null)
+        {
+            Debug.LogWarning("Received a null order.");
+            return;
+        }
+
+        orderQueue.Enqueue(order);
+        Debug.Log($"Chef received order for {order.DishName}. Added to the queue.");
+    }
+
+
     // Method to set the correct target pot based on the order
     void SetTargetPot(Order order)
     {
@@ -123,13 +136,6 @@ public class Chef : MonoBehaviour
             currentState = State.Idle;  // Return to idle state after cooking
         }
     }
-
-    public void ReceiveOrder(Order order)
-    {
-        orderQueue.Enqueue(order);  // Add the received order to the queue
-        Debug.Log($"Chef received order for {order.DishName}");
-    }
-
 
     // Method to notify wait staff when the dish is ready
     void NotifyWaitStaff(Order order)

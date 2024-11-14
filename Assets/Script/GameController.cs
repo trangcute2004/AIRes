@@ -1,3 +1,4 @@
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,6 +8,7 @@ public class GameController : MonoBehaviour
     public List<Table> tables = new List<Table>(); // List to store all existing tables in the scene
     public List<WaitStaff> waitStaff; // Wait staff list
     public Chef chef; // Chef reference
+
     public GameObject customerPrefab; // Customer prefab
     public Vector3 spawnPosition; // Position where customers will spawn
     public int customerSpawnRate; // Rate at which customers spawn
@@ -55,24 +57,46 @@ public class GameController : MonoBehaviour
     // Method to initialize the wait staff (optional)
     private void InitializeWaitStaff()
     {
-        waitStaff = new List<WaitStaff>(FindObjectsOfType<WaitStaff>()); // Find all WaitStaff in the scene
+        waitStaff = new List<WaitStaff>(FindObjectsOfType<WaitStaff>());
+
+        foreach (var waiter in waitStaff)
+        {
+            waiter.chefLocation = chef.transform; // Assign chef location
+        }
     }
 
+
     // Method to spawn a new customer at the spawn position
-    void SpawnCustomer()
+    private void SpawnCustomer()
     {
+        if (customerPrefab == null)
+        {
+            Debug.LogError("Customer prefab is not assigned!");
+            return;
+        }
+
         GameObject customerObject = Instantiate(customerPrefab, spawnPosition, Quaternion.identity);
         Customer customer = customerObject.GetComponent<Customer>();
 
-        customer.SetMenu(menu); // Pass the available menu to the customer
-        customer.FindTable(tables); // Assign an available table
+        if (customer == null)
+        {
+            Debug.LogError("Spawned object does not have a Customer component.");
+            return;
+        }
+
+        customer.SetMenu(menu); // Pass the menu to the customer
+        customer.FindTable(tables); // Assign a table to the customer
 
         // Assign the nearest available waitstaff
         WaitStaff availableWaitStaff = FindAvailableWaitStaff();
         if (availableWaitStaff != null)
         {
-            customer.SetAssignedWaitStaff(availableWaitStaff);
-            availableWaitStaff.SetTargetCustomer(customer); // Assign customer to waitstaff
+            customer.SetAssignedWaitStaff(availableWaitStaff); // Assign the WaitStaff to the customer
+            availableWaitStaff.SetTargetCustomer(customer); // Assign the customer to the WaitStaff
+        }
+        else
+        {
+            Debug.LogWarning("No available WaitStaff to assign to the customer.");
         }
     }
 
@@ -93,7 +117,8 @@ public class GameController : MonoBehaviour
     {
         // Here you can update other game elements like state management for customers, chefs, etc.
         // For instance, updating state for WaitStaff, Chef, and Customers
-        // foreach (var waiter in waitStaff) waiter.UpdateState();
-        // chef.UpdateState();
     }
+
+
+
 }
