@@ -18,13 +18,18 @@ public class Order : MonoBehaviour
 
         if (dishPrefab == null)
         {
-            Debug.LogError($"Dish prefab cannot be null for {dishName ?? "unknown"}.");
+            Debug.LogError($"Dish prefab is null for {dishName ?? "unknown"}.");
+        }
+        else
+        {
+            Debug.Log($"Dish prefab assigned: {dishPrefab.name}");
         }
 
         DishName = dishName;
         PreparationTime = preparationTime;
         DishPrefab = dishPrefab;
     }
+
 
     public float GetPreparationTime() => PreparationTime; // Returns preparation time for the dish
 
