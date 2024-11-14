@@ -33,51 +33,46 @@ public class GameController : MonoBehaviour
     private void InitializeMenu()
     {
         Debug.Log("Initializing menu...");
+        menu.Clear(); // Ensure the menu starts empty
 
-        // Clear the menu to prevent duplicate entries
-        menu.Clear();
-
-        // Validate and add burger
-        if (burgerPrefab == null)
+        // Add burger order
+        if (burgerPrefab != null)
         {
-            Debug.LogError("Burger prefab is not assigned in the Inspector!");
+            var burgerOrder = new Order("Burger", 5.0f, burgerPrefab);
+            menu.Add(burgerOrder);
+            Debug.Log($"Order created: {burgerOrder.DishName}, Prefab: {burgerOrder.DishPrefab.name}");
         }
         else
         {
-            Debug.Log($"Burger prefab detected: {burgerPrefab.name}");
-            menu.Add(new Order("Burger", 5.0f, burgerPrefab));
+            Debug.LogWarning("Burger prefab is not assigned!");
         }
 
-        // Validate and add pizza
-        if (pizzaPrefab == null)
+        // Add pizza order
+        if (pizzaPrefab != null)
         {
-            Debug.LogError("Pizza prefab is not assigned in the Inspector!");
+            var pizzaOrder = new Order("Pizza", 10.0f, pizzaPrefab);
+            menu.Add(pizzaOrder);
+            Debug.Log($"Order created: {pizzaOrder.DishName}, Prefab: {pizzaOrder.DishPrefab.name}");
         }
         else
         {
-            Debug.Log($"Pizza prefab detected: {pizzaPrefab.name}");
-            menu.Add(new Order("Pizza", 10.0f, pizzaPrefab));
+            Debug.LogWarning("Pizza prefab is not assigned!");
         }
 
-        // Validate and add salad
-        if (saladPrefab == null)
+        // Add salad order
+        if (saladPrefab != null)
         {
-            Debug.LogError("Salad prefab is not assigned in the Inspector!");
+            var saladOrder = new Order("Salad", 3.0f, saladPrefab);
+            menu.Add(saladOrder);
+            Debug.Log($"Order created: {saladOrder.DishName}, Prefab: {saladOrder.DishPrefab.name}");
         }
         else
         {
-            Debug.Log($"Salad prefab detected: {saladPrefab.name}");
-            menu.Add(new Order("Salad", 3.0f, saladPrefab));
+            Debug.LogWarning("Salad prefab is not assigned!");
         }
 
-        // Log final menu
         Debug.Log($"Menu initialized with {menu.Count} items.");
-        foreach (var order in menu)
-        {
-            Debug.Log($"Order added to menu: {order.DishName}, Prefab: {order.DishPrefab?.name ?? "null"}");
-        }
     }
-
 
     private void InitializeTables()
     {
@@ -121,8 +116,8 @@ public class GameController : MonoBehaviour
             return;
         }
 
-        customer.SetMenu(menu);
-        customer.FindTable(tables);
+        customer.SetMenu(menu); // Pass the menu to the customer
+        customer.FindTable(tables); // Assign a table to the customer
 
         Debug.Log($"Customer {customer.gameObject.name} spawned and assigned a menu with {menu.Count} items.");
     }

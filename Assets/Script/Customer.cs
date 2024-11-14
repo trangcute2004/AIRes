@@ -26,24 +26,9 @@ public class Customer : MonoBehaviour
             return;
         }
 
-        foreach (var order in availableMenu)
-        {
-            if (order == null || order.DishPrefab == null)
-            {
-                Debug.LogError($"Invalid order detected in the menu for Customer {gameObject.name}: {order?.DishName ?? "null"}");
-            }
-            else
-            {
-                Debug.Log($"Valid order for Customer {gameObject.name}: {order.DishName}, Prefab: {order.DishPrefab.name}");
-            }
-        }
-
-        menu = availableMenu;
-        Debug.Log($"Customer {gameObject.name} received a menu with {menu.Count} items.");
+        menu = new List<Order>(availableMenu);
+        Debug.Log($"Customer {gameObject.name} received a menu with {menu.Count} valid items.");
     }
-
-
-
 
     private void Start()
     {

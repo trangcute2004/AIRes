@@ -6,27 +6,32 @@ public class Order : MonoBehaviour
 {
     public string DishName { get; private set; }
     public float PreparationTime { get; private set; }
-    public GameObject DishPrefab { get; private set; } // The prefab representing the dish
+    public GameObject DishPrefab { get; private set; }
 
     public Order(string dishName, float preparationTime, GameObject dishPrefab)
     {
         if (string.IsNullOrEmpty(dishName))
         {
             Debug.LogError("Dish name cannot be null or empty.");
+            DishName = "Unknown";
+        }
+        else
+        {
+            DishName = dishName;
         }
 
         if (dishPrefab == null)
         {
-            Debug.LogError($"Dish prefab is null for {dishName ?? "unknown"}.");
+            Debug.LogError($"Dish prefab is null for {DishName}.");
+        }
+        else
+        {
+            DishPrefab = dishPrefab;
         }
 
-        DishName = dishName;
         PreparationTime = preparationTime;
-        DishPrefab = dishPrefab;
-
-        Debug.Log($"Order created: {DishName}, Prefab: {DishPrefab?.name ?? "null"}");
+        Debug.Log($"Order created successfully: {DishName}, Prefab: {DishPrefab?.name ?? "null"}");
     }
-
 
     public float GetPreparationTime() => PreparationTime; // Returns preparation time for the dish
 
