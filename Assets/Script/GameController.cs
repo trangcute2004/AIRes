@@ -61,19 +61,33 @@ public class GameController : MonoBehaviour
     // Method to spawn a new customer at the spawn position
     void SpawnCustomer()
     {
-        // You can spawn at any corner. For example, let's spawn at the top-left corner:
-        Vector3 spawnPosition = new Vector3(-10, 0, 10); // Adjust these values based on your scene
-
         GameObject customerObject = Instantiate(customerPrefab, spawnPosition, Quaternion.identity);
         Customer customer = customerObject.GetComponent<Customer>();
 
         customer.SetMenu(menu); // Pass the available menu to the customer
+        customer.FindTable(tables); // Assign an available table
 
-        // Ensure the customer finds an available table from the list of tables
-        customer.FindTable(tables); // This will handle moving to the table
+        // Assign the nearest available waitstaff
+        WaitStaff availableWaitStaff = FindAvailableWaitStaff();
+        if (availableWaitStaff != null)
+        {
+            customer.SetAssignedWaitStaff(availableWaitStaff);
+            availableWaitStaff.SetTargetCustomer(customer); // Assign customer to waitstaff
+        }
     }
 
-
+    WaitStaff FindAvailableWaitStaff()
+    {
+        foreach (var waiter in waitStaff)
+        {
+            if (waiter.IsIdle()) // Implement IsIdle in WaitStaff
+            {
+                return waiter;
+            }
+        }
+        Debug.LogWarning("No available waitstaff found!");
+        return null;
+    }
 
     void Update()
     {

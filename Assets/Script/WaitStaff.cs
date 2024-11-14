@@ -7,10 +7,14 @@ public class WaitStaff : MonoBehaviour
 
     private Table targetTable;
     private Customer targetCustomer;
+    private GameObject heldOrderPrefab;
 
     private Chef chef;  // Reference to the Chef
-
+    public Transform orderCarryPosition; // Position where the order prefab will be placed
     public float moveSpeed = 3f; // Movement speed of the waitstaff
+    private Order currentOrder;
+
+
 
     void Start()
     {
@@ -24,6 +28,7 @@ public class WaitStaff : MonoBehaviour
 
     void UpdateState()
     {
+        Debug.Log($"WaitStaff state: {currentState}");
         switch (currentState)
         {
             case State.Idle:
@@ -42,6 +47,11 @@ public class WaitStaff : MonoBehaviour
                 MoveToChef();
                 break;
         }
+    }
+
+    public bool IsIdle()
+    {
+        return currentState == State.Idle;
     }
 
     void FindNextTask()
@@ -64,6 +74,11 @@ public class WaitStaff : MonoBehaviour
                 currentState = State.Cleaning;
             }
         }
+    }
+
+    public void SetTargetCustomer(Customer customer)
+    {
+        targetCustomer = customer;
     }
 
     Customer FindCustomerNeedingOrder()
@@ -113,30 +128,54 @@ public class WaitStaff : MonoBehaviour
         }
     }
 
-    void TakeOrderFromCustomer()
+    public void TakeOrderFromCustomer()
     {
-        // Ensure the customer has a valid order
-        if (targetCustomer != null && targetCustomer.IsReadyToOrder())
+        if (targetCustomer == null)
         {
-            // Call the method that returns the order from the customer
-            Order order = targetCustomer.GiveOrderToWaitStaff();  // Get the order from the customer
-
-            if (order != null)
-            {
-                Debug.Log($"WaitStaff received the order for {order.DishPrefab.name} from customer {targetCustomer.gameObject.name}");
-
-                // Move to the Chef to give the order
-                currentState = State.MovingToChef;
-            }
-            else
-            {
-                Debug.LogWarning("Failed to retrieve order from customer.");
-            }
+            Debug.LogWarning("WaitStaff has no target customer.");
+            currentState = State.Idle;
+            return;
         }
 
-        // Reset the state after taking the order
-        targetCustomer = null;
+        if (!targetCustomer.IsReadyToOrder())
+        {
+            Debug.LogWarning($"Target customer {targetCustomer.gameObject.name} is not ready to order.");
+            currentState = State.Idle;
+            return;
+        }
+
+        // Retrieve the order
+        Order order = targetCustomer.GiveOrderToWaitStaff();
+
+        if (order != null)
+        {
+            Debug.Log($"WaitStaff received the order for {order.DishName} from customer {targetCustomer.gameObject.name}");
+            currentOrder = order; // Store the order for delivery
+            currentState = State.MovingToChef; // Proceed to deliver the order
+        }
+        else
+        {
+            Debug.LogWarning($"Failed to retrieve order from customer {targetCustomer.gameObject.name}.");
+            currentState = State.Idle;
+        }
     }
+
+
+    public void ReceiveOrder(Order order)
+    {
+        if (order == null)
+        {
+            Debug.LogWarning("Received a null order.");
+            return;
+        }
+
+        currentOrder = order; // Store the order
+        Debug.Log($"WaitStaff received order for {order.DishPrefab.name}");
+
+        // Transition to the next task, e.g., moving to the chef
+        currentState = State.MovingToChef;
+    }
+
 
     void MoveToChef()
     {
