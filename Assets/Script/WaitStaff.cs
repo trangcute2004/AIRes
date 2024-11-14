@@ -12,6 +12,7 @@ public class WaitStaff : MonoBehaviour
 
     private GameObject heldDishInstance; // To visually represent the dish being carried
 
+
     private void Update()
     {
         UpdateState();
@@ -34,9 +35,17 @@ public class WaitStaff : MonoBehaviour
 
     public void SetTargetCustomer(Customer customer)
     {
+        if (customer == null)
+        {
+            Debug.LogError("SetTargetCustomer called with null customer.");
+            return;
+        }
+
         targetCustomer = customer;
+        Debug.Log($"WaitStaff {gameObject.name} assigned to Customer {customer.gameObject.name}");
         currentState = State.TakingOrder;
     }
+
 
     private void MoveToCustomer()
     {
@@ -57,9 +66,16 @@ public class WaitStaff : MonoBehaviour
 
     public void TakeOrderFromCustomer()
     {
-        if (targetCustomer == null || !targetCustomer.IsReadyToOrder())
+        if (targetCustomer == null)
         {
-            Debug.LogWarning("Customer is not ready to order or no customer is assigned.");
+            Debug.LogWarning("No customer is assigned to this WaitStaff.");
+            currentState = State.Idle;
+            return;
+        }
+
+        if (!targetCustomer.IsReadyToOrder())
+        {
+            Debug.LogWarning($"Customer {targetCustomer.gameObject.name} is not ready to order.");
             currentState = State.Idle;
             return;
         }
@@ -73,6 +89,7 @@ public class WaitStaff : MonoBehaviour
             currentState = State.DeliveringOrder;
         }
     }
+
 
     private void MoveToChef()
     {

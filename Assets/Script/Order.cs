@@ -11,6 +11,16 @@ public class Order : MonoBehaviour
     // Constructor to initialize the order with dish name, preparation time, and prefab
     public Order(string dishName, float preparationTime, GameObject dishPrefab)
     {
+        if (string.IsNullOrEmpty(dishName))
+        {
+            Debug.LogError("Dish name cannot be null or empty.");
+        }
+
+        if (dishPrefab == null)
+        {
+            Debug.LogError($"Dish prefab cannot be null for {dishName ?? "unknown"}.");
+        }
+
         DishName = dishName;
         PreparationTime = preparationTime;
         DishPrefab = dishPrefab;

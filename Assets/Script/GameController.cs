@@ -30,16 +30,60 @@ public class GameController : MonoBehaviour
     // Initialize the menu items
     private void InitializeMenu()
     {
-        if (burgerPrefab == null || pizzaPrefab == null || saladPrefab == null)
+        Debug.Log("Initializing menu...");
+
+        if (burgerPrefab == null)
         {
-            Debug.LogError("Dish Prefabs are not assigned!");
+            Debug.LogError("Burger prefab is not assigned in the inspector!");
+        }
+        else
+        {
+            Debug.Log("Burger prefab assigned successfully.");
         }
 
-        // Adding 3 order items to the menu with Sprite assigned
-        menu.Add(new Order("Burger", 5.0f, burgerPrefab));  // 5 seconds preparation time
-        menu.Add(new Order("Pizza", 10.0f, pizzaPrefab));   // 10 seconds preparation time
-        menu.Add(new Order("Salad", 3.0f, saladPrefab));    // 3 seconds preparation time
+        if (pizzaPrefab == null)
+        {
+            Debug.LogError("Pizza prefab is not assigned in the inspector!");
+        }
+        else
+        {
+            Debug.Log("Pizza prefab assigned successfully.");
+        }
+
+        if (saladPrefab == null)
+        {
+            Debug.LogError("Salad prefab is not assigned in the inspector!");
+        }
+        else
+        {
+            Debug.Log("Salad prefab assigned successfully.");
+        }
+
+        // Initialize the menu
+        menu = new List<Order>();
+
+        if (burgerPrefab != null)
+            menu.Add(new Order("Burger", 5.0f, burgerPrefab));
+        if (pizzaPrefab != null)
+            menu.Add(new Order("Pizza", 10.0f, pizzaPrefab));
+        if (saladPrefab != null)
+            menu.Add(new Order("Salad", 3.0f, saladPrefab));
+
+        foreach (var order in menu)
+        {
+            if (order == null || order.DishPrefab == null)
+            {
+                Debug.LogError($"Invalid order detected in the menu: {order?.DishName ?? "null"}");
+            }
+            else
+            {
+                Debug.Log($"Order added to menu: {order.DishName}");
+            }
+        }
+
+        Debug.Log($"Menu initialized with {menu.Count} items.");
     }
+
 
     // Initialize existing tables (find all Table objects in the scene)
     private void InitializeTables()
@@ -84,20 +128,16 @@ public class GameController : MonoBehaviour
             return;
         }
 
+        if (menu == null || menu.Count == 0)
+        {
+            Debug.LogError("Menu is not initialized or is empty. Ensure InitializeMenu is called first.");
+            return;
+        }
+
         customer.SetMenu(menu); // Pass the menu to the customer
         customer.FindTable(tables); // Assign a table to the customer
 
-        // Assign the nearest available waitstaff
-        WaitStaff availableWaitStaff = FindAvailableWaitStaff();
-        if (availableWaitStaff != null)
-        {
-            customer.SetAssignedWaitStaff(availableWaitStaff); // Assign the WaitStaff to the customer
-            availableWaitStaff.SetTargetCustomer(customer); // Assign the customer to the WaitStaff
-        }
-        else
-        {
-            Debug.LogWarning("No available WaitStaff to assign to the customer.");
-        }
+        Debug.Log($"Customer {customer.gameObject.name} spawned and assigned a menu with {menu.Count} items.");
     }
 
     WaitStaff FindAvailableWaitStaff()

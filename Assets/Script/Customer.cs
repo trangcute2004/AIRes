@@ -20,8 +20,25 @@ public class Customer : MonoBehaviour
 
     public void SetMenu(List<Order> availableMenu)
     {
+        if (availableMenu == null || availableMenu.Count == 0)
+        {
+            Debug.LogError($"Customer {gameObject.name} received an empty or null menu.");
+            return;
+        }
+
+        foreach (var order in availableMenu)
+        {
+            if (order == null || order.DishPrefab == null)
+            {
+                Debug.LogError($"Invalid order detected in the menu for Customer {gameObject.name}: {order?.DishName ?? "null"}");
+            }
+        }
+
         menu = availableMenu;
+        Debug.Log($"Customer {gameObject.name} received a menu with {menu.Count} items.");
     }
+
+
 
     private void Start()
     {
@@ -88,31 +105,45 @@ public class Customer : MonoBehaviour
 
         if (Vector3.Distance(transform.position, assignedTable.transform.position) < 0.1f)
         {
-            currentState = State.WaitingForOrder;
+            currentState = State.WaitingForOrder; // Transition to WaitingForOrder
+            Debug.Log($"Customer {gameObject.name} reached table and is now WaitingForOrder.");
             ShowRandomOrder();
         }
     }
 
-    public void ShowRandomOrder()
+
+    private void ShowRandomOrder()
     {
-        if (menu.Count == 0)
+        if (menu == null || menu.Count == 0)
         {
-            Debug.LogError("Menu is empty!");
+            Debug.LogError($"Customer {gameObject.name} received an empty or uninitialized menu. Ensure the menu is properly set.");
             return;
         }
 
-        currentOrder = menu[Random.Range(0, menu.Count)];
-        Debug.Log($"Customer {gameObject.name} has chosen: {currentOrder.DishName}");
+        Debug.Log($"Customer {gameObject.name} selecting a random dish from the menu:");
 
-        if (currentOrder.DishPrefab != null)
+        foreach (var order in menu)
         {
-            dishInstance = Instantiate(currentOrder.DishPrefab, assignedTable.transform.position + new Vector3(0, 1, 0), Quaternion.identity);
+            Debug.Log($" - Dish: {order?.DishName ?? "null"}");
         }
-        else
+
+        // Select a random order
+        Order selectedOrder = menu[Random.Range(0, menu.Count)];
+        if (selectedOrder == null || selectedOrder.DishPrefab == null)
         {
-            Debug.LogError($"Dish prefab for {currentOrder.DishName} is missing!");
+            Debug.LogError($"Failed to select a valid order for Customer {gameObject.name}. Ensure the menu contains valid orders with dish prefabs.");
+            return;
         }
+
+        // Assign a unique order instance to the customer
+        currentOrder = new Order(selectedOrder.DishName, selectedOrder.PreparationTime, selectedOrder.DishPrefab);
+        Debug.Log($"Customer {gameObject.name} has selected: {currentOrder.DishName}");
+
+        // Instantiate the dish prefab
+        dishInstance = Instantiate(currentOrder.DishPrefab, assignedTable.transform.position + new Vector3(0, 1, 0), Quaternion.identity);
+        Debug.Log($"Dish {currentOrder.DishName} has been instantiated for Customer {gameObject.name}.");
     }
+
 
     public Order GiveOrderToWaitStaff()
     {
@@ -129,7 +160,9 @@ public class Customer : MonoBehaviour
 
     public bool IsReadyToOrder()
     {
-        return currentState == State.WaitingForOrder && currentOrder != null;
+        bool ready = currentState == State.WaitingForOrder && currentOrder != null;
+        Debug.Log($"IsReadyToOrder: {ready}, CurrentState: {currentState}, HasOrder: {currentOrder != null}");
+        return ready;
     }
 
     private void WaitForOrder()

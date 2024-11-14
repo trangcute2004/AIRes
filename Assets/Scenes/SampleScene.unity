@@ -493,7 +493,7 @@ GameObject:
   - component: {fileID: 1127782372}
   m_Layer: 0
   m_Name: WaitStaff
-  m_TagString: Untagged
+  m_TagString: WaitStaff
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -511,6 +511,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 3
+  chefLocation: {fileID: 9208611757285923725, guid: c4383aea7cbd5af4a84b84b2285a5de8, type: 3}
 --- !u!212 &1127782373
 SpriteRenderer:
   m_ObjectHideFlags: 0
