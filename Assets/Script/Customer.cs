@@ -57,7 +57,7 @@ public class Customer : MonoBehaviour
             case State.WaitingForOrder:
                 if (assignedWaitStaff != null && assignedWaitStaff.IsIdle())
                 {
-                    assignedWaitStaff.TakeOrderFromCustomer();
+                    assignedWaitStaff.SetTargetCustomer((this));
                 }
                 break;
             case State.WaitingForFood:

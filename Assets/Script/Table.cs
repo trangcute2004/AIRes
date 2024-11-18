@@ -9,6 +9,8 @@ public class Table : MonoBehaviour
     public bool IsOccupied { get; private set; }
     public bool IsDirty { get; private set; }
 
+ 
+
     // Set table number and capacity
     public void InitializeTable(int tableNumber, int capacity)
     {

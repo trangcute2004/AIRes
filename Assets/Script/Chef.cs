@@ -20,9 +20,15 @@ public class Chef : MonoBehaviour
 
     void Start()
     {
-        orderQueue = new Queue<Order>();  // Initialize order queue
+        orderQueue = new Queue<Order>();
         currentState = State.Idle;
+
+        if (saladPot == null || burgerPot == null || pizzaPot == null)
+        {
+            Debug.LogError("One or more pot references are missing in the Inspector. Please assign them.");
+        }
     }
+
 
     void Update()
     {
@@ -74,6 +80,12 @@ public class Chef : MonoBehaviour
     // Method to set the correct target pot based on the order
     void SetTargetPot(Order order)
     {
+        if (order == null)
+        {
+            Debug.LogError("Order is null. Cannot determine the target pot.");
+            return;
+        }
+
         switch (order.DishName)
         {
             case "Salad":
@@ -86,44 +98,57 @@ public class Chef : MonoBehaviour
                 targetPot = pizzaPot;
                 break;
             default:
+                Debug.LogError($"Unknown dish name: {order.DishName}. Cannot assign pot.");
                 targetPot = null;
                 break;
         }
+
+        if (targetPot == null)
+        {
+            Debug.LogError("Target pot is not assigned in the Inspector or is invalid.");
+        }
     }
+
 
     // Method to move the chef towards the target pot
     void MoveToPot()
     {
-        if (targetPot != null)
+        if (targetPot == null)
         {
-            // Move the chef towards the target pot
-            float step = 3f * Time.deltaTime; // Speed of movement
-            transform.position = Vector3.MoveTowards(transform.position, targetPot.position, step);
-
-            // When chef reaches the pot
-            if (Vector3.Distance(transform.position, targetPot.position) < 0.1f)
-            {
-                currentState = State.Cooking;  // Start cooking once at the pot
-                PrepareDish(currentOrder);  // Show the dish in the scene while cooking
-            }
+            Debug.LogError("Target pot not set! Ensure all pots are assigned in the Inspector.");
+            currentState = State.Idle;
+            return;
         }
-        else
+
+        // Move the chef towards the target pot
+        float step = 3f * Time.deltaTime; // Speed of movement
+        transform.position = Vector3.MoveTowards(transform.position, targetPot.position, step);
+
+        // When chef reaches the pot
+        if (Vector3.Distance(transform.position, targetPot.position) < 0.1f)
         {
-            Debug.LogError("Target pot not set! Check your order system.");
+            currentState = State.Cooking;  // Start cooking once at the pot
+            PrepareDish(currentOrder);  // Show the dish in the scene while cooking
         }
     }
 
+
     void PrepareDish(Order order)
     {
-        // Remove any previously instantiated dish
+        if (order.DishPrefab == null)
+        {
+            Debug.LogError($"DishPrefab is missing for the order: {order.DishName}.");
+            return;
+        }
+
         if (cookingDishInstance != null)
         {
             Destroy(cookingDishInstance);
         }
 
-        // Instantiate the dish prefab and show it in the scene at the pot position
         cookingDishInstance = Instantiate(order.DishPrefab, targetPot.position, Quaternion.identity);
     }
+
 
     void Cook()
     {
