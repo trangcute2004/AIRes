@@ -57,7 +57,9 @@ public class Customer : MonoBehaviour
             case State.WaitingForOrder:
                 if (assignedWaitStaff != null && assignedWaitStaff.IsIdle())
                 {
-                    assignedWaitStaff.SetTargetCustomer((this));
+                    Debug.Log("Attempting to assign WaitStaff to Customer.");
+                    assignedWaitStaff.SetTargetCustomer(this);
+                    Debug.Log("SetTargetCustomer method executed.");
                 }
                 break;
             case State.WaitingForFood:
