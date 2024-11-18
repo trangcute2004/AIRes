@@ -29,7 +29,8 @@ public class GameController : MonoBehaviour
         InitializeWaitStaff(); // Initialize wait staff (if needed)
         InitializeChef(); // Initialize chef (if needed)
         InitializeMenu(); // Initialize the menu with orders
-        InvokeRepeating("SpawnCustomer", 0, customerSpawnRate); // Repeatedly spawn customers
+        InvokeRepeating("SpawnCustomer", 0, 5f); // Spawn the first customer immediately, then every 5 seconds
+
     }
 
     private void InitializeMenu()
@@ -88,7 +89,7 @@ public class GameController : MonoBehaviour
     }
     private void Update()
     {
-        SpawnCustomer();
+       
     }
     private void SpawnCustomer()
     {
