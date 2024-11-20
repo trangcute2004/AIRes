@@ -104,10 +104,12 @@ public class WaitStaff : MonoBehaviour
 
         if (Vector3.Distance(transform.position, currentCustomer.transform.position) < 0.5f)
         {
-            Debug.Log($"Reached Customer {currentCustomer.gameObject.name}'s table.");
+            Debug.Log($"WaitStaff: Reached Customer {currentCustomer.gameObject.name}'s table.");
+            currentCustomer.NotifyWaitStaffArrived(); // Notify the customer
             currentState = State.TakingOrderFromCus;
         }
     }
+
 
     private void TakeOrderFromCustomer()
     {

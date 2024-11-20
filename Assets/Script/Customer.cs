@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class Customer : MonoBehaviour
 {
-    private enum State { LookingForTable, WaitingForOrder, WaitingForFood, Eating, Leaving }
+    private enum State { LookingForTable, WaitingStaffToCome, GiveOrderToStaff, WaitingForFood, Eating, Leaving }
     private State currentState = State.LookingForTable;
     public string CurrentState => currentState.ToString();
 
@@ -56,7 +56,28 @@ public class Customer : MonoBehaviour
             case State.LookingForTable:
                 MoveToTable();
                 break;
-            case State.WaitingForOrder:
+
+            case State.WaitingStaffToCome:
+             
+                if (currentState == previousState)
+                    return;
+
+                previousState = currentState;
+                if (GameController.instance.WaitStaff.IsIdle())
+                {
+                    Debug.Log("Attempting to assign WaitStaff to Customer.");
+                    GameController.instance.WaitStaff.AddCustomerToQueue(this);
+                    Debug.Log("AddCustomerToQueue method executed.");
+                }
+                break;
+
+            case State.GiveOrderToStaff:
+                // When waitstaff reaches the customer, give the order
+                Debug.Log($"Customer {gameObject.name} is ready to give the order to the waitstaff.");
+                GiveOrderToWaitStaff();
+                break;
+
+            /*case State.WaitingForOrder:
                 if (currentState == previousState)
                     return;
 
@@ -67,7 +88,7 @@ public class Customer : MonoBehaviour
                     GameController.instance.WaitStaff.AddCustomerToQueue(this);
                     Debug.Log("SetTargetCustomer method executed.");
                 }
-                break;
+                break;*/
             case State.WaitingForFood:
                 WaitForOrder();
                 break;
@@ -111,7 +132,7 @@ public class Customer : MonoBehaviour
             ShowRandomOrder();
 
             // Transition to WaitingForOrder state
-            currentState = State.WaitingForOrder;
+            currentState = State.WaitingStaffToCome;
         }
     }
 
@@ -146,20 +167,37 @@ public class Customer : MonoBehaviour
 
     public Order GiveOrderToWaitStaff()
     {
-        if (currentState != State.WaitingForOrder || currentOrder == null)
+        Debug.Log($"Here.");
+        if (currentState != State.GiveOrderToStaff || currentOrder == null)
         {
-            Debug.LogWarning($"Customer is not ready to give an order. State: {currentState}, Order: {(currentOrder == null ? "None" : currentOrder.DishName)}");
+            Debug.LogWarning($"Customer {gameObject.name} is not ready to give an order. State: {currentState}, Order: {(currentOrder == null ? "None" : currentOrder.DishName)}");
             return null;
         }
 
-        Debug.Log($"Customer is giving order: {currentOrder.DishName}");
-        currentState = State.WaitingForFood;
+        Debug.Log($"Customer {gameObject.name} is giving order: {currentOrder.DishName}.");
+        currentState = State.WaitingForFood; // Transition to waiting for food
         return currentOrder;
     }
 
+
+    public void NotifyWaitStaffArrived()
+    {
+        if (currentState == State.WaitingStaffToCome)
+        {
+            Debug.Log($"Customer {gameObject.name}: WaitStaff has arrived. Ready to give the order.");
+            currentState = State.GiveOrderToStaff;
+        }
+        else
+        {
+            Debug.LogWarning($"Customer {gameObject.name}: Cannot transition to GiveOrderToStaff from state {currentState}.");
+        }
+    }
+
+
+
     public bool IsReadyToOrder()
     {
-        bool ready = currentState == State.WaitingForOrder && currentOrder != null;
+        bool ready = currentState == State.WaitingStaffToCome && currentOrder != null;
         //Debug.Log($"IsReadyToOrder: {ready}, CurrentState: {currentState}, HasOrder: {currentOrder != null}");
         return ready;
     }
