@@ -2,8 +2,8 @@ using UnityEngine;
 
 public class WaitStaff : MonoBehaviour
 {
-    private enum State { Idle, GotoTable, TakingOrderFromCus, GotoChef, TakingDoneOrderFromChef, DeliveringOrderToCustomer }
-    private State currentState = State.Idle;
+    public enum State { Idle, GotoTable, TakingOrderFromCus, GotoChef, TakingDoneOrderFromChef, DeliveringOrderToCustomer }
+    public State currentState = State.Idle;
 
     private Customer targetCustomer; // The customer currently being served
     private Order currentOrder; // The order being handled by the waitstaff
@@ -13,6 +13,11 @@ public class WaitStaff : MonoBehaviour
 
     private GameObject heldDishInstance; // Visual representation of the dish being carried
 
+    private void Start()
+    {
+        currentState = State.Idle;
+    }
+
     private void Update()
     {
         UpdateState();
@@ -20,6 +25,7 @@ public class WaitStaff : MonoBehaviour
 
     private void UpdateState()
     {
+        Debug.Log("STAFF STATE: " + currentState.ToString());
         switch (currentState)
         {
             case State.Idle:
@@ -31,24 +37,24 @@ public class WaitStaff : MonoBehaviour
                 MoveToCustomer();
                 break;
 
-            case State.TakingOrderFromCus:
-                Debug.Log("WaitStaff is taking the order from the customer.");
-                TakeOrderFromCustomer();
-                break;
+                //case State.TakingOrderFromCus:
+                //    Debug.Log("WaitStaff is taking the order from the customer.");
+                //    TakeOrderFromCustomer();
+                //    break;
 
-            case State.GotoChef:
-                Debug.Log("WaitStaff is moving to the chef.");
-                MoveToChef();
-                break;
+                //case State.GotoChef:
+                //    Debug.Log("WaitStaff is moving to the chef.");
+                //    MoveToChef();
+                //    break;
 
-            case State.TakingDoneOrderFromChef:
-                // Add logic if needed
-                break;
+                //case State.TakingDoneOrderFromChef:
+                //    // Add logic if needed
+                //    break;
 
-            case State.DeliveringOrderToCustomer:
-                Debug.Log("WaitStaff is delivering the order to the customer.");
-                DeliverOrderToCustomer();
-                break;
+                //case State.DeliveringOrderToCustomer:
+                //    Debug.Log("WaitStaff is delivering the order to the customer.");
+                //    DeliverOrderToCustomer();
+                //    break;
         }
     }
 
@@ -61,19 +67,21 @@ public class WaitStaff : MonoBehaviour
         }
 
         targetCustomer = customer;
+        Debug.LogError("1231232");
         currentState = State.GotoTable;
         Debug.Log($"WaitStaff assigned to Customer {customer.gameObject.name}. Moving to table.");
     }
 
     private void MoveToCustomer()
     {
+        Debug.LogError("213333333333333333");
         if (targetCustomer == null)
         {
             Debug.LogWarning("No target customer. Returning to Idle state.");
             currentState = State.Idle;
             return;
         }
-
+        Debug.Log("GoHere");
         // Move towards the customer
         float step = moveSpeed * Time.deltaTime;
         transform.position = Vector3.MoveTowards(transform.position, targetCustomer.transform.position, step);
@@ -220,6 +228,7 @@ public class WaitStaff : MonoBehaviour
 
     public bool IsIdle()
     {
+        Debug.LogError("Assigned Staff: " + currentState.ToString());
         return currentState == State.Idle;
     }
 }

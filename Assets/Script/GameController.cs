@@ -4,8 +4,9 @@ using UnityEngine;
 
 public class GameController : MonoBehaviour
 {
+    public static GameController instance;
     public List<Table> tables = new List<Table>(); // List to store all existing tables in the scene
-    public List<WaitStaff> waitStaff; // Wait staff list
+    public WaitStaff WaitStaff;
     public Chef chef; // Chef reference
 
     public GameObject customerPrefab; // Customer prefab
@@ -16,6 +17,11 @@ public class GameController : MonoBehaviour
     [SerializeField] public GameObject saladPrefab;
 
     private List<Order> menu = new List<Order>(); // Declare the menu list here
+
+    private void Awake()
+    {
+        instance = this;
+    }
 
     void Start()
     {
@@ -81,11 +87,7 @@ public class GameController : MonoBehaviour
 
     private void InitializeWaitStaff()
     {
-        waitStaff = new List<WaitStaff>(FindObjectsOfType<WaitStaff>());
-        foreach (var waiter in waitStaff)
-        {
-            waiter.chefLocation = chef?.transform;
-        }
+        WaitStaff = FindObjectOfType<WaitStaff>();
     }
     private void Update()
     {

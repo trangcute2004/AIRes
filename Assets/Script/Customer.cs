@@ -16,7 +16,7 @@ public class Customer : MonoBehaviour
 
     public GameObject doorPrefab;
     private Vector3 doorPosition;
-    public WaitStaff assignedWaitStaff;
+    //public WaitStaff assignedWaitStaff;
 
     public void SetMenu(List<Order> availableMenu)
     {
@@ -47,6 +47,8 @@ public class Customer : MonoBehaviour
         UpdateState();
     }
 
+    private State previousState;
+
     private void UpdateState()
     {
         switch (currentState)
@@ -55,10 +57,14 @@ public class Customer : MonoBehaviour
                 MoveToTable();
                 break;
             case State.WaitingForOrder:
-                if (assignedWaitStaff != null && assignedWaitStaff.IsIdle())
+                if (currentState == previousState)
+                    return;
+
+                previousState = currentState;
+                if (GameController.instance.WaitStaff.IsIdle())
                 {
                     Debug.Log("Attempting to assign WaitStaff to Customer.");
-                    assignedWaitStaff.SetTargetCustomer(this);
+                    GameController.instance.WaitStaff.SetTargetCustomer(this);
                     Debug.Log("SetTargetCustomer method executed.");
                 }
                 break;
@@ -82,6 +88,7 @@ public class Customer : MonoBehaviour
         {
             assignedTable.Occupy();
             currentState = State.LookingForTable;
+            previousState=currentState;
         }
         else
         {
@@ -218,9 +225,9 @@ public class Customer : MonoBehaviour
     }
 
 
-    public void SetAssignedWaitStaff(WaitStaff waitStaff)
-    {
-        assignedWaitStaff = waitStaff;
-        Debug.Log($"Assigned WaitStaff {waitStaff.gameObject.name} to Customer {gameObject.name}");
-    }
+    //public void SetAssignedWaitStaff(WaitStaff waitStaff)
+    //{
+    //    assignedWaitStaff = waitStaff;
+    //    Debug.Log($"Assigned WaitStaff {waitStaff.gameObject.name} to Customer {gameObject.name}");
+    //}
 }
