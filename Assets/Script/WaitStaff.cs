@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class WaitStaff : MonoBehaviour
@@ -5,13 +6,18 @@ public class WaitStaff : MonoBehaviour
     public enum State { Idle, GotoTable, TakingOrderFromCus, GotoChef, TakingDoneOrderFromChef, DeliveringOrderToCustomer }
     public State currentState = State.Idle;
 
-    private Customer targetCustomer; // The customer currently being served
+    private Queue<Customer> customerQueue = new Queue<Customer>(); // Queue of customers to serve
+    private Customer currentCustomer; // The customer currently being served
     private Order currentOrder; // The order being handled by the waitstaff
 
     public float moveSpeed = 3f; // Movement speed of the waitstaff
     public Transform chefLocation; // Position of the chef
 
-    private GameObject heldDishInstance; // Visual representation of the dish being carried
+    public GameObject saladPrefab;  // Assign in the Inspector
+    public GameObject burgerPrefab; // Assign in the Inspector
+    public GameObject pizzaPrefab;  // Assign in the Inspector
+    private GameObject heldDishInstance;
+
 
     private void Start()
     {
@@ -29,7 +35,10 @@ public class WaitStaff : MonoBehaviour
         switch (currentState)
         {
             case State.Idle:
-                //currentState = State.GotoTable;
+                if (customerQueue.Count > 0)
+                {
+                    AssignNextCustomer();
+                }
                 break;
 
             case State.GotoTable:
@@ -58,62 +67,89 @@ public class WaitStaff : MonoBehaviour
         }
     }
 
-    public void SetTargetCustomer(Customer customer)
+    public void AddCustomerToQueue(Customer customer)
     {
-        if (customer == null)
+        if (customer != null)
         {
-            Debug.LogError("SetTargetCustomer called with null customer.");
+            customerQueue.Enqueue(customer);
+            Debug.Log($"Customer {customer.gameObject.name} added to the queue.");
+        }
+    }
+
+    private void AssignNextCustomer()
+    {
+        if (customerQueue.Count == 0)
+        {
+            Debug.LogWarning("No customers in queue.");
+            currentState = State.Idle;
             return;
         }
 
-        targetCustomer = customer;
-        //Debug.LogError("1231232");
+        currentCustomer = customerQueue.Dequeue();
+        Debug.Log($"Serving Customer {currentCustomer.gameObject.name}.");
         currentState = State.GotoTable;
-        Debug.Log($"WaitStaff assigned to Customer {customer.gameObject.name}. Moving to table.");
     }
 
     private void MoveToCustomer()
     {
-        //Debug.LogError("213333333333333333");
-        if (targetCustomer == null)
+        if (currentCustomer == null)
         {
             Debug.LogWarning("No target customer. Returning to Idle state.");
             currentState = State.Idle;
             return;
         }
-        //Debug.Log("GoHere");
-        // Move towards the customer
+
         float step = moveSpeed * Time.deltaTime;
-        transform.position = Vector3.MoveTowards(transform.position, targetCustomer.transform.position, step);
+        transform.position = Vector3.MoveTowards(transform.position, currentCustomer.transform.position, step);
 
-        float distance = Vector3.Distance(transform.position, targetCustomer.transform.position);
-        //Debug.Log($"WaitStaff moving to Customer. Distance remaining: {distance}");
-
-        // Check if the waitstaff has reached the customer
-        if (distance < 0.5f) // Adjust threshold if needed
+        if (Vector3.Distance(transform.position, currentCustomer.transform.position) < 0.5f)
         {
-            Debug.Log($"WaitStaff reached Customer {targetCustomer.gameObject.name}'s table.");
+            Debug.Log($"Reached Customer {currentCustomer.gameObject.name}'s table.");
             currentState = State.TakingOrderFromCus;
         }
     }
 
     private void TakeOrderFromCustomer()
     {
-        if (targetCustomer == null || !targetCustomer.IsReadyToOrder())
+        if (currentCustomer == null || !currentCustomer.IsReadyToOrder())
         {
-            Debug.LogWarning("Customer is not ready or null.");
+            Debug.LogWarning($"WaitStaff: Customer {currentCustomer?.gameObject.name ?? "None"} is not ready or null.");
             currentState = State.Idle;
             return;
         }
 
-        currentOrder = targetCustomer.GiveOrderToWaitStaff();
+        currentOrder = currentCustomer.GiveOrderToWaitStaff();
         if (currentOrder != null)
         {
-            Debug.Log($"Order received: {currentOrder.DishName}");
-            CreateHeldDish(currentOrder.DishPrefab);
+            Debug.Log($"WaitStaff received order: {currentOrder.DishName} from Customer {currentCustomer.gameObject.name}");
+
+            // Assign the correct prefab based on the dish name
+            switch (currentOrder.DishName.ToLower())
+            {
+                case "salad":
+                    currentOrder.DishPrefab = saladPrefab;
+                    break;
+                case "burger":
+                    currentOrder.DishPrefab = burgerPrefab;
+                    break;
+                case "pizza":
+                    currentOrder.DishPrefab = pizzaPrefab;
+                    break;
+                default:
+                    Debug.LogWarning($"No prefab assigned for dish: {currentOrder.DishName}");
+                    break;
+            }
+
             currentState = State.GotoChef;
         }
+        else
+        {
+            Debug.LogWarning($"WaitStaff: Failed to receive order from Customer {currentCustomer.gameObject.name}");
+            currentState = State.Idle;
+        }
     }
+
+
 
     private void MoveToChef()
     {
@@ -127,14 +163,12 @@ public class WaitStaff : MonoBehaviour
         float step = moveSpeed * Time.deltaTime;
         transform.position = Vector3.MoveTowards(transform.position, chefLocation.position, step);
 
-        float distance = Vector3.Distance(transform.position, chefLocation.position);
-        if (distance < 0.5f)
+        if (Vector3.Distance(transform.position, chefLocation.position) < 0.5f)
         {
             Debug.Log("WaitStaff reached the chef.");
             DeliverOrderToChef();
         }
     }
-
     private void DeliverOrderToChef()
     {
         if (chefLocation == null)
@@ -151,31 +185,20 @@ public class WaitStaff : MonoBehaviour
             return;
         }
 
-        // Simulate order delivery to the chef
         Chef chef = chefLocation.GetComponent<Chef>();
         if (chef != null)
         {
-            chef.ReceiveOrder(currentOrder); // Assuming Chef has a ReceiveOrder method
-            Debug.Log($"Order '{currentOrder.DishName}' successfully delivered to the chef.");
-        }
-        else
-        {
-            Debug.LogError("Chef object does not have a Chef component. Cannot deliver order.");
+            chef.ReceiveOrder(currentOrder);
+            Debug.Log($"Order '{currentOrder.DishName}' delivered to the chef.");
         }
 
-        // Reset current order and held dish after delivery
-        Destroy(heldDishInstance);
-        heldDishInstance = null;
-        currentOrder = null;
-
-        // Transition to the next state or reset to Idle
-        currentState = State.DeliveringOrderToCustomer; // Ready to take the prepared dish back to the customer
-        Debug.Log("WaitStaff transitioning to DeliveringOrderToCustomer state.");
+        currentOrder = null; // Clear the current order
+        currentState = State.Idle; // WaitStaff ready to serve the next customer
     }
 
     /*private void RetrieveOrderFromChef()
     {
-        if (chefLocation == null || targetCustomer == null)
+        if (chefLocation == null || currentCustomer == null)
         {
             Debug.LogWarning("Chef or customer information missing.");
             currentState = State.Idle;
@@ -183,18 +206,19 @@ public class WaitStaff : MonoBehaviour
         }
 
         Chef chef = chefLocation.GetComponent<Chef>();
-        if (chef != null && chef.HasOrderForCustomer(targetCustomer))
+        if (chef != null && chef.HasOrderForCustomer(currentCustomer))
         {
             currentOrder = chef.GivePreparedOrderToWaitStaff();
-            CreateHeldDish(currentOrder.DishPrefab);
+            CreateHeldDish(); // Create the visual representation of the dish
             currentState = State.DeliveringOrderToCustomer;
-            Debug.Log("Order retrieved from chef. Ready to deliver to customer.");
+            Debug.Log($"Order '{currentOrder.DishName}' retrieved from chef. Ready to deliver to customer.");
         }
     }*/
 
+
     private void DeliverOrderToCustomer()
     {
-        if (targetCustomer == null)
+        if (currentCustomer == null)
         {
             Debug.LogError("No customer to deliver the order to.");
             currentState = State.Idle;
@@ -202,38 +226,33 @@ public class WaitStaff : MonoBehaviour
         }
 
         float step = moveSpeed * Time.deltaTime;
-        transform.position = Vector3.MoveTowards(transform.position, targetCustomer.transform.position, step);
+        transform.position = Vector3.MoveTowards(transform.position, currentCustomer.transform.position, step);
 
-        float distance = Vector3.Distance(transform.position, targetCustomer.transform.position);
-        Debug.Log($"WaitStaff delivering to Customer. Distance remaining: {distance}");
-
-        if (distance < 0.5f)
+        if (Vector3.Distance(transform.position, currentCustomer.transform.position) < 0.5f)
         {
-            Debug.Log($"Order delivered to Customer {targetCustomer.gameObject.name}.");
+            Debug.Log($"Order delivered to Customer {currentCustomer.gameObject.name}.");
             ResetWaitStaff();
         }
     }
 
     private void ResetWaitStaff()
     {
-        targetCustomer = null;
+        currentCustomer = null;
         currentOrder = null;
-        Destroy(heldDishInstance);
-        heldDishInstance = null;
         currentState = State.Idle;
-        Debug.Log("WaitStaff reset to Idle state.");
+        Debug.Log("WaitStaff ready for the next customer.");
     }
 
-    private void CreateHeldDish(GameObject dishPrefab)
+    private void CreateHeldDish()
     {
-        if (dishPrefab == null) return;
+        if (currentOrder == null || currentOrder.DishPrefab == null) return;
 
         if (heldDishInstance != null)
         {
             Destroy(heldDishInstance);
         }
 
-        heldDishInstance = Instantiate(dishPrefab, transform.position + Vector3.up, Quaternion.identity);
+        heldDishInstance = Instantiate(currentOrder.DishPrefab, transform.position + Vector3.up, Quaternion.identity);
         heldDishInstance.transform.parent = transform;
     }
 

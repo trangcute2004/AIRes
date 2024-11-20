@@ -64,7 +64,7 @@ public class Customer : MonoBehaviour
                 if (GameController.instance.WaitStaff.IsIdle())
                 {
                     Debug.Log("Attempting to assign WaitStaff to Customer.");
-                    GameController.instance.WaitStaff.SetTargetCustomer(this);
+                    GameController.instance.WaitStaff.AddCustomerToQueue(this);
                     Debug.Log("SetTargetCustomer method executed.");
                 }
                 break;
