@@ -160,7 +160,7 @@ public class Customer : MonoBehaviour
     public bool IsReadyToOrder()
     {
         bool ready = currentState == State.WaitingForOrder && currentOrder != null;
-        Debug.Log($"IsReadyToOrder: {ready}, CurrentState: {currentState}, HasOrder: {currentOrder != null}");
+        //Debug.Log($"IsReadyToOrder: {ready}, CurrentState: {currentState}, HasOrder: {currentOrder != null}");
         return ready;
     }
 
@@ -223,11 +223,4 @@ public class Customer : MonoBehaviour
             Destroy(gameObject);
         }
     }
-
-
-    //public void SetAssignedWaitStaff(WaitStaff waitStaff)
-    //{
-    //    assignedWaitStaff = waitStaff;
-    //    Debug.Log($"Assigned WaitStaff {waitStaff.gameObject.name} to Customer {gameObject.name}");
-    //}
 }

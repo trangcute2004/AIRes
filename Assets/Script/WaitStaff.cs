@@ -37,24 +37,24 @@ public class WaitStaff : MonoBehaviour
                 MoveToCustomer();
                 break;
 
-                //case State.TakingOrderFromCus:
-                //    Debug.Log("WaitStaff is taking the order from the customer.");
-                //    TakeOrderFromCustomer();
-                //    break;
+            case State.TakingOrderFromCus:
+                Debug.Log("WaitStaff is taking the order from the customer.");
+                TakeOrderFromCustomer();
+                break;
 
-                //case State.GotoChef:
-                //    Debug.Log("WaitStaff is moving to the chef.");
-                //    MoveToChef();
-                //    break;
+            case State.GotoChef:
+                Debug.Log("WaitStaff is moving to the chef.");
+                MoveToChef();
+                break;
 
-                //case State.TakingDoneOrderFromChef:
-                //    // Add logic if needed
-                //    break;
+            case State.TakingDoneOrderFromChef:
+                //RetrieveOrderFromChef();
+                break;
 
-                //case State.DeliveringOrderToCustomer:
-                //    Debug.Log("WaitStaff is delivering the order to the customer.");
-                //    DeliverOrderToCustomer();
-                //    break;
+            case State.DeliveringOrderToCustomer:
+                Debug.Log("WaitStaff is delivering the order to the customer.");
+                DeliverOrderToCustomer();
+                break;
         }
     }
 
@@ -67,27 +67,27 @@ public class WaitStaff : MonoBehaviour
         }
 
         targetCustomer = customer;
-        Debug.LogError("1231232");
+        //Debug.LogError("1231232");
         currentState = State.GotoTable;
         Debug.Log($"WaitStaff assigned to Customer {customer.gameObject.name}. Moving to table.");
     }
 
     private void MoveToCustomer()
     {
-        Debug.LogError("213333333333333333");
+        //Debug.LogError("213333333333333333");
         if (targetCustomer == null)
         {
             Debug.LogWarning("No target customer. Returning to Idle state.");
             currentState = State.Idle;
             return;
         }
-        Debug.Log("GoHere");
+        //Debug.Log("GoHere");
         // Move towards the customer
         float step = moveSpeed * Time.deltaTime;
         transform.position = Vector3.MoveTowards(transform.position, targetCustomer.transform.position, step);
 
         float distance = Vector3.Distance(transform.position, targetCustomer.transform.position);
-        Debug.Log($"WaitStaff moving to Customer. Distance remaining: {distance}");
+        //Debug.Log($"WaitStaff moving to Customer. Distance remaining: {distance}");
 
         // Check if the waitstaff has reached the customer
         if (distance < 0.5f) // Adjust threshold if needed
@@ -99,16 +99,9 @@ public class WaitStaff : MonoBehaviour
 
     private void TakeOrderFromCustomer()
     {
-        if (targetCustomer == null)
+        if (targetCustomer == null || !targetCustomer.IsReadyToOrder())
         {
-            Debug.LogWarning("No target customer to take order from.");
-            currentState = State.Idle;
-            return;
-        }
-
-        if (!targetCustomer.IsReadyToOrder())
-        {
-            Debug.LogWarning($"Customer {targetCustomer.gameObject.name} is not ready to order.");
+            Debug.LogWarning("Customer is not ready or null.");
             currentState = State.Idle;
             return;
         }
@@ -117,7 +110,7 @@ public class WaitStaff : MonoBehaviour
         if (currentOrder != null)
         {
             Debug.Log($"Order received: {currentOrder.DishName}");
-            CreateHeldDish(currentOrder.DishPrefab); // Display the dish being carried
+            CreateHeldDish(currentOrder.DishPrefab);
             currentState = State.GotoChef;
         }
     }
@@ -135,14 +128,13 @@ public class WaitStaff : MonoBehaviour
         transform.position = Vector3.MoveTowards(transform.position, chefLocation.position, step);
 
         float distance = Vector3.Distance(transform.position, chefLocation.position);
-        Debug.Log($"WaitStaff moving to Chef. Distance remaining: {distance}");
-
         if (distance < 0.5f)
         {
             Debug.Log("WaitStaff reached the chef.");
             DeliverOrderToChef();
         }
     }
+
     private void DeliverOrderToChef()
     {
         if (chefLocation == null)
@@ -180,6 +172,25 @@ public class WaitStaff : MonoBehaviour
         currentState = State.DeliveringOrderToCustomer; // Ready to take the prepared dish back to the customer
         Debug.Log("WaitStaff transitioning to DeliveringOrderToCustomer state.");
     }
+
+    /*private void RetrieveOrderFromChef()
+    {
+        if (chefLocation == null || targetCustomer == null)
+        {
+            Debug.LogWarning("Chef or customer information missing.");
+            currentState = State.Idle;
+            return;
+        }
+
+        Chef chef = chefLocation.GetComponent<Chef>();
+        if (chef != null && chef.HasOrderForCustomer(targetCustomer))
+        {
+            currentOrder = chef.GivePreparedOrderToWaitStaff();
+            CreateHeldDish(currentOrder.DishPrefab);
+            currentState = State.DeliveringOrderToCustomer;
+            Debug.Log("Order retrieved from chef. Ready to deliver to customer.");
+        }
+    }*/
 
     private void DeliverOrderToCustomer()
     {
@@ -228,7 +239,7 @@ public class WaitStaff : MonoBehaviour
 
     public bool IsIdle()
     {
-        Debug.LogError("Assigned Staff: " + currentState.ToString());
+        //Debug.LogError("Assigned Staff: " + currentState.ToString());
         return currentState == State.Idle;
     }
 }
