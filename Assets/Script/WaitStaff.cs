@@ -105,10 +105,12 @@ public class WaitStaff : MonoBehaviour
         if (Vector3.Distance(transform.position, currentCustomer.transform.position) < 0.5f)
         {
             Debug.Log($"WaitStaff: Reached Customer {currentCustomer.gameObject.name}'s table.");
-            currentCustomer.NotifyWaitStaffArrived(); // Notify the customer
-            currentState = State.TakingOrderFromCus;
+            currentCustomer.NotifyWaitStaffArrived(); // Notify the customer to show the dish prefab
+            currentState = State.TakingOrderFromCus;  // Switch to order-taking state
         }
     }
+
+
 
 
     private void TakeOrderFromCustomer()
@@ -150,8 +152,6 @@ public class WaitStaff : MonoBehaviour
             currentState = State.Idle;
         }
     }
-
-
 
     private void MoveToChef()
     {

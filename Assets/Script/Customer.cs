@@ -58,7 +58,6 @@ public class Customer : MonoBehaviour
                 break;
 
             case State.WaitingStaffToCome:
-             
                 if (currentState == previousState)
                     return;
 
@@ -77,24 +76,14 @@ public class Customer : MonoBehaviour
                 GiveOrderToWaitStaff();
                 break;
 
-            /*case State.WaitingForOrder:
-                if (currentState == previousState)
-                    return;
-
-                previousState = currentState;
-                if (GameController.instance.WaitStaff.IsIdle())
-                {
-                    Debug.Log("Attempting to assign WaitStaff to Customer.");
-                    GameController.instance.WaitStaff.AddCustomerToQueue(this);
-                    Debug.Log("SetTargetCustomer method executed.");
-                }
-                break;*/
             case State.WaitingForFood:
                 WaitForOrder();
                 break;
+
             case State.Eating:
                 Eat();
                 break;
+
             case State.Leaving:
                 MoveToDoor();
                 break;
@@ -127,15 +116,12 @@ public class Customer : MonoBehaviour
         // Check if the customer has reached the table
         if (Vector3.Distance(transform.position, assignedTable.transform.position) < 0.1f)
         {
-            // Immediately select a random dish
-            Debug.Log($"Customer {gameObject.name} reached table and is now selecting a dish.");
-            ShowRandomOrder();
-
-            // Transition to WaitingForOrder state
-            currentState = State.WaitingStaffToCome;
+            Debug.Log($"Customer {gameObject.name} reached table and is now waiting for the waiter.");
+            currentState = State.WaitingStaffToCome;  // Transition to Waiting for Waiter
         }
     }
 
+    // Show a random order from the menu
     private void ShowRandomOrder()
     {
         if (menu == null || menu.Count == 0)
@@ -156,14 +142,13 @@ public class Customer : MonoBehaviour
 
         Debug.Log($"Customer {gameObject.name} selected: {currentOrder.DishName}");
 
-        // Instantiate the dish
+        // Instantiate the dish prefab at the table position
         if (assignedTable != null)
         {
             Vector3 dishPosition = assignedTable.transform.position + Vector3.up * 1.5f; // Adjust height if needed
             dishInstance = Instantiate(currentOrder.DishPrefab, dishPosition, Quaternion.identity);
         }
     }
-
 
     public Order GiveOrderToWaitStaff()
     {
@@ -186,12 +171,12 @@ public class Customer : MonoBehaviour
         {
             Debug.Log($"Customer {gameObject.name}: WaitStaff has arrived. Ready to give the order.");
             currentState = State.GiveOrderToStaff;
-        }
-        else
-        {
-            Debug.LogWarning($"Customer {gameObject.name}: Cannot transition to GiveOrderToStaff from state {currentState}.");
+
+            // Show the random order (dish prefab) once the waitstaff has arrived
+            ShowRandomOrder();
         }
     }
+
 
 
 
