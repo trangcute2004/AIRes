@@ -186,9 +186,10 @@ public class Customer : MonoBehaviour
     public bool IsReadyToOrder()
     {
         bool ready = currentState == State.WaitingStaffToCome && currentOrder != null;
-        //Debug.Log($"IsReadyToOrder: {ready}, CurrentState: {currentState}, HasOrder: {currentOrder != null}");
+        Debug.Log($"IsReadyToOrder for {gameObject.name}: {ready}, CurrentState: {currentState}, CurrentOrder: {(currentOrder == null ? "None" : currentOrder.DishName)}");
         return ready;
     }
+
 
     private void WaitForOrder()
     {
