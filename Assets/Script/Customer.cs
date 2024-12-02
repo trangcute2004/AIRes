@@ -18,6 +18,8 @@ public class Customer : MonoBehaviour
     private Vector3 doorPosition;
     //public WaitStaff assignedWaitStaff;
 
+
+
     public void SetMenu(List<Order> availableMenu)
     {
         if (availableMenu == null || availableMenu.Count == 0)
@@ -71,6 +73,7 @@ public class Customer : MonoBehaviour
                 break;
 
             case State.GiveOrderToStaff:
+                NotifyWaitStaffArrived();
                 // When waitstaff reaches the customer, give the order
                 Debug.Log($"Customer {gameObject.name} is ready to give the order to the waitstaff.");
                 GiveOrderToWaitStaff();
@@ -150,9 +153,11 @@ public class Customer : MonoBehaviour
         }
     }
 
+
     public Order GiveOrderToWaitStaff()
     {
-        Debug.Log($"Here.");
+        Debug.Log($"Current State: {currentState}, Current Order: {(currentOrder == null ? "None" : currentOrder.DishName)}");
+
         if (currentState != State.GiveOrderToStaff || currentOrder == null)
         {
             Debug.LogWarning($"Customer {gameObject.name} is not ready to give an order. State: {currentState}, Order: {(currentOrder == null ? "None" : currentOrder.DishName)}");
@@ -165,19 +170,17 @@ public class Customer : MonoBehaviour
     }
 
 
+
     public void NotifyWaitStaffArrived()
     {
+        Debug.Log($"WaitStaff has arrived for Customer {gameObject.name}. Current State: {currentState}");
         if (currentState == State.WaitingStaffToCome)
         {
-            Debug.Log($"Customer {gameObject.name}: WaitStaff has arrived. Ready to give the order.");
+            Debug.Log($"Customer {gameObject.name}: Ready to give the order.");
             currentState = State.GiveOrderToStaff;
-
-            // Show the random order (dish prefab) once the waitstaff has arrived
             ShowRandomOrder();
         }
     }
-
-
 
 
     public bool IsReadyToOrder()

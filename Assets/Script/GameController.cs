@@ -25,6 +25,7 @@ public class GameController : MonoBehaviour
 
     void Start()
     {
+        Time.timeScale = 3.0f;
         if (customerPrefab == null)
         {
             Debug.LogError("Customer prefab is missing. Please assign it in the inspector.");

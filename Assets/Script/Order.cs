@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEngine;
 
-public class Order : MonoBehaviour
+public class Order
 {
     public string DishName { get; private set; }
     public float PreparationTime { get; private set; }
-    public GameObject DishPrefab { get; set; } // Change this to 'public' or 'protected'
+    public GameObject DishPrefab { get; set; }
 
+    // Constructor remains valid now
     public Order(string dishName, float preparationTime, GameObject dishPrefab)
     {
         DishName = dishName;
@@ -33,3 +34,4 @@ public class Order : MonoBehaviour
         return new Order("Pizza", 15f, pizzaPrefab);
     }
 }
+
