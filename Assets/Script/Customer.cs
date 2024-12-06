@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class Customer : MonoBehaviour
 {
-    public enum State { LookingForTable, WaitingStaffToCome, GiveOrderToStaff, OrderGiven, WaitingForFood, Eating, Leaving }
+    public enum State { LookingForTable, WaitingStaffToCome, GiveOrderToWaitStaff, OrderGiven, WaitingForFood, Eating, Leaving }
     public State currentState = State.LookingForTable;
     public string CurrentState => currentState.ToString();
 
@@ -74,10 +74,10 @@ public class Customer : MonoBehaviour
                 }
                 break;
 
-            case State.GiveOrderToStaff:
+            case State.GiveOrderToWaitStaff:
                 NotifyWaitStaffArrived();
                 // When waitstaff reaches the customer, give the order
-                Debug.Log($"Customer {gameObject.name} is ready to give the order to the waitstaff.");
+                //Debug.Log($"Customer {gameObject.name} is ready to give the order to the waitstaff.");
                 GiveOrderToWaitStaff();
                 break;
             case State.OrderGiven:
@@ -160,17 +160,37 @@ public class Customer : MonoBehaviour
 
     public Order GiveOrderToWaitStaff()
     {
-        if (currentState != State.GiveOrderToStaff || currentOrder == null)
+        // Ensure the customer is in the correct state to give the order
+        if (currentState != State.GiveOrderToWaitStaff)
         {
             Debug.LogWarning($"Customer {gameObject.name} is not ready to give an order. State: {currentState}, Order: {(currentOrder == null ? "None" : currentOrder.DishName)}");
             return null;
         }
 
+        // Check if the customer has an order to give
+        if (currentOrder == null)
+        {
+            Debug.LogWarning($"Customer {gameObject.name} has no order selected.");
+            return null;
+        }
+
         Debug.Log($"Customer {gameObject.name} is giving order: {currentOrder.DishName}.");
 
+        // Return the order (don't transition yet to 'OrderGiven')
         Order orderToReturn = currentOrder;
-        currentState = State.OrderGiven; // Change to OrderGiven after giving the order
+
+        // Do not change state to OrderGiven here; WaitStaff will change it when the order is taken
         return orderToReturn;
+    }
+
+    public void OnOrderTakenByWaitStaff()
+    {
+        // Transition to 'OrderGiven' after WaitStaff has taken the order
+        if (currentState == State.GiveOrderToWaitStaff)
+        {
+            Debug.Log($"Customer {gameObject.name} has given the order.");
+            currentState = State.OrderGiven;
+        }
     }
 
 
@@ -178,7 +198,7 @@ public class Customer : MonoBehaviour
     {
         Debug.Log($"WaitStaff has arrived for Customer {gameObject.name}. Current State: {currentState}");
 
-        // Ensure customer has selected an order before transitioning
+        // Ensure the customer has selected an order before transitioning
         if (currentState == State.WaitingStaffToCome && !hasGivenOrder)
         {
             // Customer must select an order from the menu
@@ -190,7 +210,8 @@ public class Customer : MonoBehaviour
             // Transition to "GiveOrderToStaff" if the order is not null
             if (currentOrder != null)
             {
-                currentState = State.GiveOrderToStaff;  // Customer is now ready to give the order
+                // Transition customer state to GiveOrderToStaff, indicating they are ready to place the order
+                currentState = State.GiveOrderToWaitStaff;
                 Debug.Log($"Customer {gameObject.name}: Now ready to give order.");
             }
             else
@@ -198,7 +219,12 @@ public class Customer : MonoBehaviour
                 Debug.LogWarning($"Customer {gameObject.name} has no order selected. Can't transition to GiveOrderToStaff.");
             }
         }
+        else
+        {
+            Debug.LogWarning($"Customer {gameObject.name} is not in the correct state to give an order. Current state: {currentState}");
+        }
     }
+
 
 
     public void SetToReadyForOrder()
@@ -206,13 +232,13 @@ public class Customer : MonoBehaviour
         if (currentState == State.WaitingForFood)
         {
             Debug.Log($"Customer {gameObject.name} is now ready to give the order.");
-            currentState = State.GiveOrderToStaff;  // Transition to giving the order
+            currentState = State.GiveOrderToWaitStaff;  // Transition to giving the order
         }
     }
 
     public bool IsReadyToOrder()
     {
-        return currentState == State.GiveOrderToStaff && currentOrder != null;
+        return currentState == State.GiveOrderToWaitStaff && currentOrder != null;
     }
 
     private void WaitForOrder()

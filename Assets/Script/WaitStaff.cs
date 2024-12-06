@@ -123,9 +123,9 @@ public class WaitStaff : MonoBehaviour
 
         // Check if the customer is in the right state to give the order
         Debug.Log($"WaitStaff checking if customer is ready. Customer state: {currentCustomer.currentState}");
-        if (currentCustomer.currentState != Customer.State.GiveOrderToStaff || currentCustomer.HasGivenOrder)
+        if (currentCustomer.currentState != Customer.State.GiveOrderToWaitStaff)
         {
-            Debug.LogWarning($"WaitStaff: Customer {currentCustomer.gameObject.name} is not ready to order.");
+            Debug.LogWarning($"WaitStaff: Customer {currentCustomer.gameObject.name} is not in the correct state to give an order.");
             currentState = State.Idle;
             return;
         }
@@ -135,7 +135,11 @@ public class WaitStaff : MonoBehaviour
         if (currentOrder != null)
         {
             Debug.Log($"WaitStaff received order: {currentOrder.DishName} from Customer {currentCustomer.gameObject.name}");
-            currentState = State.GotoDishStack; // Transition to the next state
+
+            // After receiving the order, tell the customer the order was taken
+            currentCustomer.OnOrderTakenByWaitStaff(); // Transition customer to OrderGiven state
+
+            currentState = State.GotoDishStack; // Transition to the next state (move to dish stack)
         }
         else
         {
