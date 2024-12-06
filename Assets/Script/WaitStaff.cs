@@ -48,7 +48,7 @@ public class WaitStaff : MonoBehaviour
                 break;
 
             case State.TakingOrderFromCus:
-                Debug.Log("WaitStaff is taking the order from the customer.");
+  
                 TakeOrderFromCustomer();
                 break;
 
@@ -112,51 +112,30 @@ public class WaitStaff : MonoBehaviour
         }
     }
 
-
-
-
     private void TakeOrderFromCustomer()
     {
         if (currentCustomer == null)
         {
-            Debug.LogWarning($"WaitStaff: Customer is null.");
+            Debug.LogWarning("WaitStaff: No customer assigned.");
             currentState = State.Idle;
             return;
         }
 
-        bool isReady = currentCustomer.IsReadyToOrder();
-        Debug.Log($"Is Customer {currentCustomer.gameObject.name} ready to order? {isReady}");
-
-        if (!isReady)
+        // Check if the customer is in the right state to give the order
+        Debug.Log($"WaitStaff checking if customer is ready. Customer state: {currentCustomer.currentState}");
+        if (currentCustomer.currentState != Customer.State.GiveOrderToStaff || currentCustomer.HasGivenOrder)
         {
-            Debug.LogWarning($"WaitStaff: Customer {currentCustomer.gameObject.name} is not ready.");
+            Debug.LogWarning($"WaitStaff: Customer {currentCustomer.gameObject.name} is not ready to order.");
             currentState = State.Idle;
             return;
         }
 
+        // Proceed with taking the order
         currentOrder = currentCustomer.GiveOrderToWaitStaff();
         if (currentOrder != null)
         {
             Debug.Log($"WaitStaff received order: {currentOrder.DishName} from Customer {currentCustomer.gameObject.name}");
-
-            // Assign the correct prefab based on the dish name
-            switch (currentOrder.DishName.ToLower())
-            {
-                case "salad":
-                    currentOrder.DishPrefab = saladPrefab;
-                    break;
-                case "burger":
-                    currentOrder.DishPrefab = burgerPrefab;
-                    break;
-                case "pizza":
-                    currentOrder.DishPrefab = pizzaPrefab;
-                    break;
-                default:
-                    Debug.LogWarning($"No prefab assigned for dish: {currentOrder.DishName}");
-                    break;
-            }
-
-            currentState = State.GotoDishStack;
+            currentState = State.GotoDishStack; // Transition to the next state
         }
         else
         {
@@ -164,6 +143,7 @@ public class WaitStaff : MonoBehaviour
             currentState = State.Idle;
         }
     }
+
 
 
     private void MoveToDishStack()
@@ -203,6 +183,13 @@ public class WaitStaff : MonoBehaviour
         {
             Debug.Log($"Order delivered to Customer {currentCustomer.gameObject.name}.");
             Destroy(heldDishInstance); // Destroy the dish when delivered
+
+            // Mark the order as delivered
+            if (currentOrder != null)
+            {
+                currentOrder.IsDelivered = true;
+            }
+
             ResetWaitStaff();  // Reset for the next customer
         }
     }

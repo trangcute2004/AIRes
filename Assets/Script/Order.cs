@@ -9,6 +9,8 @@ public class Order
     public float PreparationTime { get; private set; }
     public GameObject DishPrefab { get; set; }
 
+    public bool IsDelivered = false;
+
     // Constructor remains valid now
     public Order(string dishName, float preparationTime, GameObject dishPrefab)
     {

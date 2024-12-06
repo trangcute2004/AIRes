@@ -3,8 +3,8 @@ using UnityEngine;
 
 public class Customer : MonoBehaviour
 {
-    private enum State { LookingForTable, WaitingStaffToCome, GiveOrderToStaff, WaitingForFood, Eating, Leaving }
-    private State currentState = State.LookingForTable;
+    public enum State { LookingForTable, WaitingStaffToCome, GiveOrderToStaff, OrderGiven, WaitingForFood, Eating, Leaving }
+    public State currentState = State.LookingForTable;
     public string CurrentState => currentState.ToString();
 
     private Table assignedTable;
@@ -14,6 +14,8 @@ public class Customer : MonoBehaviour
     private List<Order> menu = new List<Order>();
     private GameObject dishInstance;
 
+    private bool hasGivenOrder = false; // Tracks if the order has already been given
+    public bool HasGivenOrder => hasGivenOrder; // Public read-only property
     public GameObject doorPrefab;
     private Vector3 doorPosition;
     //public WaitStaff assignedWaitStaff;
@@ -77,6 +79,8 @@ public class Customer : MonoBehaviour
                 // When waitstaff reaches the customer, give the order
                 Debug.Log($"Customer {gameObject.name} is ready to give the order to the waitstaff.");
                 GiveOrderToWaitStaff();
+                break;
+            case State.OrderGiven:
                 break;
 
             case State.WaitingForFood:
@@ -156,8 +160,6 @@ public class Customer : MonoBehaviour
 
     public Order GiveOrderToWaitStaff()
     {
-        Debug.Log($"Current State: {currentState}, Current Order: {(currentOrder == null ? "None" : currentOrder.DishName)}");
-
         if (currentState != State.GiveOrderToStaff || currentOrder == null)
         {
             Debug.LogWarning($"Customer {gameObject.name} is not ready to give an order. State: {currentState}, Order: {(currentOrder == null ? "None" : currentOrder.DishName)}");
@@ -165,42 +167,68 @@ public class Customer : MonoBehaviour
         }
 
         Debug.Log($"Customer {gameObject.name} is giving order: {currentOrder.DishName}.");
-        currentState = State.WaitingForFood; // Transition to waiting for food
-        return currentOrder;
-    }
 
+        Order orderToReturn = currentOrder;
+        currentState = State.OrderGiven; // Change to OrderGiven after giving the order
+        return orderToReturn;
+    }
 
 
     public void NotifyWaitStaffArrived()
     {
         Debug.Log($"WaitStaff has arrived for Customer {gameObject.name}. Current State: {currentState}");
-        if (currentState == State.WaitingStaffToCome)
+        // Remove direct state transition, just notify arrival
+        if (currentState == State.WaitingStaffToCome && !hasGivenOrder)
         {
             Debug.Log($"Customer {gameObject.name}: Ready to give the order.");
-            currentState = State.GiveOrderToStaff;
-            ShowRandomOrder();
+            // Leave the state as WaitingStaffToCome until the customer is ready
         }
     }
 
 
-    public bool IsReadyToOrder()
+
+
+    public void SetToReadyForOrder()
     {
-        bool ready = currentState == State.WaitingStaffToCome && currentOrder != null;
-        Debug.Log($"IsReadyToOrder for {gameObject.name}: {ready}, CurrentState: {currentState}, CurrentOrder: {(currentOrder == null ? "None" : currentOrder.DishName)}");
-        return ready;
+        if (currentState == State.WaitingForFood)
+        {
+            Debug.Log($"Customer {gameObject.name} is now ready to give the order.");
+            currentState = State.GiveOrderToStaff;  // Transition to giving the order
+        }
     }
 
+    public bool IsReadyToOrder()
+    {
+        return currentState == State.GiveOrderToStaff && currentOrder != null;
+    }
 
     private void WaitForOrder()
     {
-        StartEating();
+        if (currentOrder == null)
+        {
+            Debug.LogError("No order to wait for.");
+            return;
+        }
+
+        // Check if the food has been delivered by the WaitStaff
+        if (currentState == State.WaitingForFood && currentOrder.IsDelivered)
+        {
+            // Transition to eating state once food is delivered
+            StartEating();
+        }
+        else
+        {
+            // Continue to wait for the food
+            Debug.Log($"Customer {gameObject.name} is still waiting for their food.");
+        }
     }
 
     private void StartEating()
     {
         eatingTimer = eatingDuration;
-        currentState = State.Eating;
+        currentState = State.Eating;  // Transition to eating state
 
+        // Optionally, activate the dish instance if it's not already active
         if (dishInstance != null)
         {
             dishInstance.SetActive(true);
@@ -215,6 +243,7 @@ public class Customer : MonoBehaviour
         {
             currentState = State.Leaving;
 
+            // Destroy the dish instance when the customer is done eating
             if (dishInstance != null)
             {
                 Destroy(dishInstance);
