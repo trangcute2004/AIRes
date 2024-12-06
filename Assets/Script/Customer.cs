@@ -177,15 +177,28 @@ public class Customer : MonoBehaviour
     public void NotifyWaitStaffArrived()
     {
         Debug.Log($"WaitStaff has arrived for Customer {gameObject.name}. Current State: {currentState}");
-        // Remove direct state transition, just notify arrival
+
+        // Ensure customer has selected an order before transitioning
         if (currentState == State.WaitingStaffToCome && !hasGivenOrder)
         {
-            Debug.Log($"Customer {gameObject.name}: Ready to give the order.");
-            // Leave the state as WaitingStaffToCome until the customer is ready
+            // Customer must select an order from the menu
+            if (currentOrder == null)
+            {
+                ShowRandomOrder();  // Select a random order for the customer (or provide a mechanism to choose)
+            }
+
+            // Transition to "GiveOrderToStaff" if the order is not null
+            if (currentOrder != null)
+            {
+                currentState = State.GiveOrderToStaff;  // Customer is now ready to give the order
+                Debug.Log($"Customer {gameObject.name}: Now ready to give order.");
+            }
+            else
+            {
+                Debug.LogWarning($"Customer {gameObject.name} has no order selected. Can't transition to GiveOrderToStaff.");
+            }
         }
     }
-
-
 
 
     public void SetToReadyForOrder()

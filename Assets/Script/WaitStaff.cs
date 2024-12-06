@@ -145,7 +145,6 @@ public class WaitStaff : MonoBehaviour
     }
 
 
-
     private void MoveToDishStack()
     {
         if (dishStackLocation == null)
