@@ -101,6 +101,6 @@ MonoBehaviour:
   moveSpeed: 3
   chefLocation: {fileID: 9208611757285923725, guid: c4383aea7cbd5af4a84b84b2285a5de8, type: 3}
   dishStackLocation: {fileID: 0}
-  saladPrefab: {fileID: 0}
-  burgerPrefab: {fileID: 0}
+  saladPrefab: {fileID: 5528717017803882264, guid: e4058678f98bb1245926d2b18c874c79, type: 3}
+  burgerPrefab: {fileID: 8133430973538948628, guid: 15d5013fd6f5a684495ea1f42f190fef, type: 3}
   pizzaPrefab: {fileID: 5045082804309660329, guid: 94ac41389ec82bd45927df69e73e9472, type: 3}
