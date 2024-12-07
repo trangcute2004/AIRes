@@ -44,7 +44,7 @@ public class Chef : MonoBehaviour
                 {
                     // Process next order in the queue
                     currentOrder = orderQueue.Dequeue();
-                    cookingTime = currentOrder.GetPreparationTime();  // Set cooking time based on the order
+                    //cookingTime = currentOrder.GetPreparationTime();  // Set cooking time based on the order
                     currentState = State.MovingToPot;  // Chef needs to move to the pot
                     SetTargetPot(currentOrder);  // Set the correct pot to move to
                 }

@@ -9,7 +9,7 @@ public class Customer : MonoBehaviour
 
     private Table assignedTable;
     private Order currentOrder;
-    private float eatingDuration = 5f;
+    //private float eatingDuration = 5f;
     private float eatingTimer;
     private List<Order> menu = new List<Order>();
     private GameObject dishInstance;
@@ -78,7 +78,7 @@ public class Customer : MonoBehaviour
                 NotifyWaitStaffArrived();
                 // When waitstaff reaches the customer, give the order
                 //Debug.Log($"Customer {gameObject.name} is ready to give the order to the waitstaff.");
-                GiveOrderToWaitStaff();
+                //GiveOrderToWaitStaff();
                 break;
             case State.OrderGiven:
                 break;
@@ -189,8 +189,25 @@ public class Customer : MonoBehaviour
         if (currentState == State.GiveOrderToWaitStaff)
         {
             Debug.Log($"Customer {gameObject.name} has given the order.");
-            currentState = State.OrderGiven;  // Now mark the customer as having given their order
+            currentState = State.OrderGiven;  // Transition to OrderGiven state after order is given
         }
+
+        // Transition to "WaitingForFood" after order is placed
+        if (currentState == State.OrderGiven)
+        {
+            Debug.Log($"Customer {gameObject.name} is waiting for food.");
+            currentState = State.WaitingForFood; // Transition to waiting for food
+        }
+    }
+
+    public void OnOrderDelivered()
+    {
+        // Once the order is delivered, transition to Eating state
+        Debug.Log($"Customer {gameObject.name} is now eating.");
+        currentState = State.Eating;  // Transition to eating state
+
+        // Start the eating timer based on the food's EatingDuration
+        StartEating();  // Start eating with the appropriate eating duration
     }
 
 
@@ -198,34 +215,24 @@ public class Customer : MonoBehaviour
     {
         Debug.Log($"WaitStaff has arrived for Customer {gameObject.name}. Current State: {currentState}");
 
-        // Ensure the customer has selected an order before transitioning
+        // Ensure customer has selected an order before transitioning
         if (currentState == State.WaitingStaffToCome && !hasGivenOrder)
         {
-            // Customer must select an order from the menu
             if (currentOrder == null)
             {
                 ShowRandomOrder();  // Select a random order for the customer (or provide a mechanism to choose)
             }
 
-            // Transition to "GiveOrderToStaff" if the order is not null
             if (currentOrder != null)
             {
                 currentState = State.GiveOrderToWaitStaff;  // Customer is now ready to give the order
+                GameController.instance.WaitStaff.AddCustomerToQueue(this); // Add customer to the queue
                 Debug.Log($"Customer {gameObject.name}: Now ready to give order.");
             }
             else
             {
-                Debug.LogWarning($"Customer {gameObject.name} has no order selected. Can't transition to GiveOrderToStaff.");
+                Debug.LogWarning($"Customer {gameObject.name} has no order selected.");
             }
-        }
-        else if (currentState == State.GiveOrderToWaitStaff)
-        {
-            // If already in the right state, we can notify that the waitstaff has arrived
-            Debug.Log($"Customer {gameObject.name}: Already ready to give the order.");
-        }
-        else
-        {
-            Debug.LogWarning($"Customer {gameObject.name} is not in the correct state to give an order. Current state: {currentState}");
         }
     }
 
@@ -256,7 +263,8 @@ public class Customer : MonoBehaviour
         if (currentState == State.WaitingForFood && currentOrder.IsDelivered)
         {
             // Transition to eating state once food is delivered
-            StartEating();
+            Debug.Log($"Food delivered to Customer {gameObject.name}. Starting to eat.");
+            StartEating();  // Begin eating with the correct time
         }
         else
         {
@@ -265,9 +273,15 @@ public class Customer : MonoBehaviour
         }
     }
 
+
     private void StartEating()
     {
-        eatingTimer = eatingDuration;
+        // Use the specific eating duration for the dish that was ordered
+        if (currentOrder != null)
+        {
+            eatingTimer = currentOrder.EatingDuration;  // Set the eating timer based on the dish's eating duration
+        }
+
         currentState = State.Eating;  // Transition to eating state
 
         // Optionally, activate the dish instance if it's not already active
@@ -277,13 +291,15 @@ public class Customer : MonoBehaviour
         }
     }
 
+
     private void Eat()
     {
+        // Decrease the eating timer over time
         eatingTimer -= Time.deltaTime;
 
         if (eatingTimer <= 0f)
         {
-            currentState = State.Leaving;
+            currentState = State.Leaving;  // Transition to leaving state when done eating
 
             // Destroy the dish instance when the customer is done eating
             if (dishInstance != null)
@@ -292,7 +308,6 @@ public class Customer : MonoBehaviour
             }
         }
     }
-
 
     private void MoveToDoor()
     {

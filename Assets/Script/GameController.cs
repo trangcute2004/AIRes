@@ -46,7 +46,7 @@ public class GameController : MonoBehaviour
 
         if (burgerPrefab != null)
         {
-            menu.Add(new Order("Burger", 5.0f, burgerPrefab));
+            menu.Add(new Order("Burger", 5.0f, burgerPrefab, 5f));  // 5 seconds for a burger
             Debug.Log("Added Burger to the menu.");
         }
         else
@@ -56,7 +56,7 @@ public class GameController : MonoBehaviour
 
         if (saladPrefab != null)
         {
-            menu.Add(new Order("Salad", 3.0f, saladPrefab));
+            menu.Add(new Order("Salad", 3.0f, saladPrefab, 3f));  // 3 seconds for salad
             Debug.Log("Added Salad to the menu.");
         }
         else
@@ -66,7 +66,7 @@ public class GameController : MonoBehaviour
 
         if (pizzaPrefab != null)
         {
-            menu.Add(new Order("Pizza", 10.0f, pizzaPrefab));
+            menu.Add(new Order("Pizza", 10.0f, pizzaPrefab, 8f));  // 8 seconds for pizza
             Debug.Log("Added Pizza to the menu.");
         }
         else

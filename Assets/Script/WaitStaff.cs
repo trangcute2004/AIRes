@@ -66,8 +66,15 @@ public class WaitStaff : MonoBehaviour
         {
             customerQueue.Enqueue(customer);
             Debug.Log($"Customer {customer.gameObject.name} added to the queue.");
+
+            // If the staff is idle, immediately start serving the next customer
+            if (currentState == State.Idle && customerQueue.Count == 1)
+            {
+                AssignNextCustomer();  // Start serving the first customer in the queue
+            }
         }
     }
+
 
     private void AssignNextCustomer()
     {
@@ -78,10 +85,10 @@ public class WaitStaff : MonoBehaviour
             return;
         }
 
-        // Assign the first customer in the queue
+        // Assign the next customer in the queue
         currentCustomer = customerQueue.Dequeue();
         Debug.Log($"Serving Customer {currentCustomer.gameObject.name}.");
-        currentState = State.GotoTable; // Move to the next customer
+        currentState = State.GotoTable;  // Move to the next customer
     }
 
     private void MoveToCustomer()
@@ -103,6 +110,7 @@ public class WaitStaff : MonoBehaviour
             currentState = State.TakingOrderFromCus;  // Switch to order-taking state
         }
     }
+
     private void TakeOrderFromCustomer()
     {
         if (currentCustomer == null)
@@ -112,9 +120,11 @@ public class WaitStaff : MonoBehaviour
             return;
         }
 
-        // Check if the customer is in the right state to give the order
+        // Check if the customer is ready to give the order
         Debug.Log($"WaitStaff checking if customer is ready. Customer state: {currentCustomer.currentState}");
-        if (currentCustomer.currentState == Customer.State.GiveOrderToWaitStaff) // Check if customer is ready
+
+        // If the customer is in a state where they can give an order, take the order
+        if (currentCustomer.currentState == Customer.State.GiveOrderToWaitStaff || currentCustomer.currentState == Customer.State.OrderGiven)
         {
             // Proceed with taking the order
             currentOrder = currentCustomer.GiveOrderToWaitStaff();
@@ -139,6 +149,7 @@ public class WaitStaff : MonoBehaviour
             currentState = State.Idle;  // Return to idle if not in the correct state
         }
     }
+
 
     private void MoveToDishStack()
     {
@@ -175,17 +186,21 @@ public class WaitStaff : MonoBehaviour
         if (Vector3.Distance(transform.position, currentCustomer.transform.position) < 0.5f)
         {
             Debug.Log($"Order delivered to Customer {currentCustomer.gameObject.name}.");
-            Destroy(heldDishInstance); // Destroy the dish when delivered
+            Destroy(heldDishInstance);  // Destroy the dish when delivered
 
-            // Mark the order as delivered
             if (currentOrder != null)
             {
-                currentOrder.IsDelivered = true;
+                currentOrder.IsDelivered = true;  // Mark the order as delivered
+                currentCustomer.OnOrderDelivered();  // Notify the customer that the order is delivered
             }
 
             ResetWaitStaff();  // Reset for the next customer
+
+            // Automatically serve the next customer in the queue
+            AssignNextCustomer();  // Call to serve the next customer
         }
     }
+
 
     private void ResetWaitStaff()
     {
@@ -195,7 +210,6 @@ public class WaitStaff : MonoBehaviour
         currentState = State.Idle;
         Debug.Log("WaitStaff ready for the next customer.");
     }
-
     private void CreateHeldDish()
     {
         if (currentOrder == null || currentOrder.DishPrefab == null) return;
