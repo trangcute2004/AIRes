@@ -21,12 +21,12 @@ public class Order
 
     public static Order CreateSaladOrder(GameObject saladPrefab)
     {
-        return new Order("Salad", 5f, saladPrefab, 3f);  // 3 seconds to eat salad
+        return new Order("Salad", 5f, saladPrefab, 5f);  // 3 seconds to eat salad
     }
 
     public static Order CreateBurgerOrder(GameObject burgerPrefab)
     {
-        return new Order("Burger", 10f, burgerPrefab, 5f);  // 5 seconds to eat burger
+        return new Order("Burger", 10f, burgerPrefab, 6f);  // 5 seconds to eat burger
     }
 
     public static Order CreatePizzaOrder(GameObject pizzaPrefab)
