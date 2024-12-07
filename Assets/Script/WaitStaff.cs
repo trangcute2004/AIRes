@@ -38,31 +38,23 @@ public class WaitStaff : MonoBehaviour
             case State.Idle:
                 if (customerQueue.Count > 0)
                 {
-                    AssignNextCustomer();
+                    AssignNextCustomer(); // Assign next customer to serve
                 }
                 break;
 
             case State.GotoTable:
-                Debug.Log("WaitStaff is moving to the table.");
                 MoveToCustomer();
                 break;
 
             case State.TakingOrderFromCus:
-  
                 TakeOrderFromCustomer();
                 break;
 
             case State.GotoDishStack:
-                Debug.Log("WaitStaff is moving to the dish stack.");
                 MoveToDishStack();
                 break;
 
-            case State.TakeOrđerFromDishStack:
-                
-                break;
-
             case State.DeliveringOrderToCustomer:
-                Debug.Log("WaitStaff is delivering the order to the customer.");
                 DeliverOrderToCustomer();
                 break;
         }
@@ -86,11 +78,11 @@ public class WaitStaff : MonoBehaviour
             return;
         }
 
+        // Assign the first customer in the queue
         currentCustomer = customerQueue.Dequeue();
         Debug.Log($"Serving Customer {currentCustomer.gameObject.name}.");
-        currentState = State.GotoTable;
+        currentState = State.GotoTable; // Move to the next customer
     }
-
 
     private void MoveToCustomer()
     {
@@ -111,7 +103,6 @@ public class WaitStaff : MonoBehaviour
             currentState = State.TakingOrderFromCus;  // Switch to order-taking state
         }
     }
-
     private void TakeOrderFromCustomer()
     {
         if (currentCustomer == null)
@@ -123,31 +114,31 @@ public class WaitStaff : MonoBehaviour
 
         // Check if the customer is in the right state to give the order
         Debug.Log($"WaitStaff checking if customer is ready. Customer state: {currentCustomer.currentState}");
-        if (currentCustomer.currentState != Customer.State.GiveOrderToWaitStaff)
+        if (currentCustomer.currentState == Customer.State.GiveOrderToWaitStaff) // Check if customer is ready
         {
-            Debug.LogWarning($"WaitStaff: Customer {currentCustomer.gameObject.name} is not in the correct state to give an order.");
-            currentState = State.Idle;
-            return;
-        }
+            // Proceed with taking the order
+            currentOrder = currentCustomer.GiveOrderToWaitStaff();
+            if (currentOrder != null)
+            {
+                Debug.Log($"WaitStaff received order: {currentOrder.DishName} from Customer {currentCustomer.gameObject.name}");
 
-        // Proceed with taking the order
-        currentOrder = currentCustomer.GiveOrderToWaitStaff();
-        if (currentOrder != null)
-        {
-            Debug.Log($"WaitStaff received order: {currentOrder.DishName} from Customer {currentCustomer.gameObject.name}");
+                // After receiving the order, tell the customer the order was taken
+                currentCustomer.OnOrderTakenByWaitStaff(); // Transition customer to OrderGiven state
 
-            // After receiving the order, tell the customer the order was taken
-            currentCustomer.OnOrderTakenByWaitStaff(); // Transition customer to OrderGiven state
-
-            currentState = State.GotoDishStack; // Transition to the next state (move to dish stack)
+                currentState = State.GotoDishStack; // Transition to the next state (move to dish stack)
+            }
+            else
+            {
+                Debug.LogWarning($"WaitStaff: Failed to receive order from Customer {currentCustomer.gameObject.name}");
+                currentState = State.Idle;
+            }
         }
         else
         {
-            Debug.LogWarning($"WaitStaff: Failed to receive order from Customer {currentCustomer.gameObject.name}");
-            currentState = State.Idle;
+            Debug.LogWarning($"WaitStaff: Customer {currentCustomer.gameObject.name} is not in the correct state to give an order.");
+            currentState = State.Idle;  // Return to idle if not in the correct state
         }
     }
-
 
     private void MoveToDishStack()
     {
@@ -168,7 +159,6 @@ public class WaitStaff : MonoBehaviour
             currentState = State.DeliveringOrderToCustomer;  // Move to delivering to the customer
         }
     }
-
 
     private void DeliverOrderToCustomer()
     {
@@ -197,7 +187,6 @@ public class WaitStaff : MonoBehaviour
         }
     }
 
-
     private void ResetWaitStaff()
     {
         currentCustomer = null;
@@ -206,7 +195,6 @@ public class WaitStaff : MonoBehaviour
         currentState = State.Idle;
         Debug.Log("WaitStaff ready for the next customer.");
     }
-
 
     private void CreateHeldDish()
     {
@@ -224,7 +212,6 @@ public class WaitStaff : MonoBehaviour
 
     public bool IsIdle()
     {
-        //Debug.LogError("Assigned Staff: " + currentState.ToString());
         return currentState == State.Idle;
     }
 }
