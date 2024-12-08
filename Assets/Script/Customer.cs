@@ -92,18 +92,33 @@ public class Customer : MonoBehaviour
 
     public void FindTable(List<Table> tables)
     {
-        assignedTable = tables.Find(t => !t.IsOccupied && !t.IsDirty);
         if (assignedTable != null)
         {
-            assignedTable.Occupy();
-            Debug.Log($"Customer found table {assignedTable.TableNumber}");
-            currentState = State.LookingForTable;  // Ensure state is LookingForTable until the customer reaches the table
+            Debug.Log($"Customer {gameObject.name} already has a table assigned.");
+            return;  // Don't reassign the table if already assigned
+        }
+
+        // Log all the tables with their statuses
+        foreach (var table in tables)
+        {
+            Debug.Log($"Table {table.TableNumber} - Occupied: {table.IsOccupied}, Dirty: {table.IsDirty}");
+        }
+
+        // Find a table that is not occupied and is clean
+        assignedTable = tables.Find(t => !t.IsOccupied && !t.IsDirty);
+
+        if (assignedTable != null)
+        {
+            assignedTable.Occupy();  // Mark the table as occupied
+            Debug.Log($"Customer {gameObject.name} found table {assignedTable.TableNumber}");
+            currentState = State.LookingForTable;  // Transition to looking for table state
         }
         else
         {
-            Debug.Log("No available tables for the customer.");
+            Debug.Log($"Customer {gameObject.name} could not find an available table.");
         }
     }
+
 
     private void MoveToTable()
     {
@@ -280,7 +295,7 @@ public class Customer : MonoBehaviour
         {
             if (assignedTable != null)
             {
-                assignedTable.Vacate();
+                assignedTable.Vacate();  // Make the table dirty and unoccupied
             }
 
             if (dishInstance != null)
@@ -288,7 +303,7 @@ public class Customer : MonoBehaviour
                 Destroy(dishInstance);
             }
 
-            Destroy(gameObject);
+            Destroy(gameObject);  // Remove the customer object
         }
 
         if (assignedTable != null)
@@ -296,4 +311,5 @@ public class Customer : MonoBehaviour
             assignedTable.Clean();  // Clean the table after the customer leaves
         }
     }
+
 }

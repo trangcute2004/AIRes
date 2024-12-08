@@ -20,7 +20,17 @@ public class Table : MonoBehaviour
     }
 
     // Occupy and vacate methods for table status
-    public void Occupy() => IsOccupied = true;
+    public void Occupy()
+    {
+        if (IsOccupied)
+        {
+            Debug.LogWarning("Table is already occupied!");
+            return;  // Prevent occupying an already occupied table
+        }
+
+        IsOccupied = true;
+        Debug.Log("Table has been occupied.");
+    }
     public void Vacate()
     {
         IsOccupied = false;
@@ -42,11 +52,13 @@ public class Table : MonoBehaviour
     // Clean the table, destroying the leftovers prefab and marking it clean
     public void Clean()
     {
-        IsDirty = false;
-        if (leftoverInstance != null)
+        if (IsOccupied)
         {
-            Destroy(leftoverInstance);  // Destroy the leftover prefab when cleaning
-            leftoverInstance = null;    // Ensure it's not reused
+            Debug.LogWarning("Cleaning an occupied table!");
+            return;  // Prevent cleaning an occupied table
         }
+
+        IsDirty = false;
+        Debug.Log("Table has been cleaned.");
     }
 }
