@@ -7,6 +7,8 @@ public class WaitStaff : MonoBehaviour
     public State currentState = State.Idle;
 
     private Queue<Customer> customerQueueForService = new Queue<Customer>(); // Queue of customers waiting to be served
+    private Queue<Table> cleaningQueue = new Queue<Table>();  // Queue for tables to clean
+
     private Customer currentCustomer; // The customer currently being served
     private Order currentOrder; // The order being handled by the waitstaff
 
@@ -27,6 +29,7 @@ public class WaitStaff : MonoBehaviour
     private void Update()
     {
         UpdateState();
+
     }
 
     private void UpdateState()
@@ -38,6 +41,12 @@ public class WaitStaff : MonoBehaviour
                 if (customerQueueForService.Count > 0)
                 {
                     AssignNextCustomer(); // Assign next customer to serve
+                }
+
+                if (cleaningQueue.Count > 0)
+                {
+                    Table tableToClean = cleaningQueue.Dequeue();  // Get the next dirty table
+                    CleanTable(tableToClean);
                 }
                 break;
 
@@ -82,6 +91,23 @@ public class WaitStaff : MonoBehaviour
             {
                 AssignNextCustomer();  // Start serving the first customer in the queue
             }
+        }
+    }
+
+    public void AddCleaningTask(Table table)
+    {
+        if (!cleaningQueue.Contains(table) && table.IsDirty)
+        {
+            cleaningQueue.Enqueue(table);  // Add dirty table to the cleaning queue
+        }
+    }
+
+    private void CleanTable(Table table)
+    {
+        if (table != null)
+        {
+            table.Clean();  // Clean the table
+            Debug.Log($"WaitStaff cleaned table {table.TableNumber}.");  // Optional: Debug message
         }
     }
 

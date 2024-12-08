@@ -96,8 +96,8 @@ public class Customer : MonoBehaviour
         if (assignedTable != null)
         {
             assignedTable.Occupy();
-            currentState = State.LookingForTable;
-            previousState = currentState;
+            Debug.Log($"Customer found table {assignedTable.TableNumber}");
+            currentState = State.LookingForTable;  // Ensure state is LookingForTable until the customer reaches the table
         }
         else
         {
@@ -109,13 +109,14 @@ public class Customer : MonoBehaviour
     {
         if (assignedTable == null) return;
 
+        Debug.Log("Moving to table...");  // Debug message to confirm it's executing
         float step = 3f * Time.deltaTime;
         transform.position = Vector3.MoveTowards(transform.position, assignedTable.transform.position, step);
 
         if (Vector3.Distance(transform.position, assignedTable.transform.position) < 0.1f)
         {
-            Debug.Log($"Customer {gameObject.name} reached table and is now waiting for the waiter.");
-            currentState = State.WaitingStaffToCome;  // Transition to Waiting for Waiter
+            Debug.Log($"Customer reached table: {assignedTable.TableNumber}");
+            currentState = State.WaitingStaffToCome;  // Transition to waiting for staff once the customer reaches the table
         }
     }
 
@@ -256,6 +257,11 @@ public class Customer : MonoBehaviour
             {
                 Destroy(dishInstance);
             }
+
+            if (assignedTable != null)
+            {
+                assignedTable.Vacate();  // Make the table dirty and show leftovers
+            }
         }
     }
 
@@ -283,6 +289,11 @@ public class Customer : MonoBehaviour
             }
 
             Destroy(gameObject);
+        }
+
+        if (assignedTable != null)
+        {
+            assignedTable.Clean();  // Clean the table after the customer leaves
         }
     }
 }
