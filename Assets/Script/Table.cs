@@ -5,60 +5,54 @@ public class Table : MonoBehaviour
     public int TableNumber { get; private set; }
     public int Capacity { get; private set; }
     public bool IsOccupied { get; private set; }
-    public bool IsDirty { get; private set; }
+    public bool IsDirty { get; set; }  // Keep it private but create setter methods
 
-    public GameObject leftoverPrefab;  // Prefab for leftover food
-    private GameObject leftoverInstance;  // To hold the instantiated leftover food object
+    public GameObject leftoverPrefab;
+    private GameObject leftoverInstance;
 
-    // Set table number and capacity
     public void InitializeTable(int tableNumber, int capacity)
     {
         TableNumber = tableNumber;
         Capacity = capacity;
-        IsOccupied = false; // Set table as unoccupied initially
-        IsDirty = false;    // Set table as clean initially
+        IsOccupied = false;
+        IsDirty = false;
     }
 
-    // Occupy and vacate methods for table status
     public void Occupy()
     {
         if (IsOccupied)
         {
             Debug.LogWarning("Table is already occupied!");
-            return;  // Prevent occupying an already occupied table
+            return;
         }
-
         IsOccupied = true;
         Debug.Log("Table has been occupied.");
     }
+
     public void Vacate()
     {
         IsOccupied = false;
-        SetDirty();  // After customer leaves, make the table dirty and show leftovers
+        SetDirty();
     }
 
-
-    // Set the table as dirty and spawn the leftover prefab
     public void SetDirty()
     {
-        IsDirty = true;
+        IsDirty = true;  // This marks the table as dirty.
         if (leftoverPrefab != null && leftoverInstance == null)
         {
             leftoverInstance = Instantiate(leftoverPrefab, transform.position + Vector3.up, Quaternion.identity);
         }
     }
 
-
-    // Clean the table, destroying the leftovers prefab and marking it clean
     public void Clean()
     {
         if (IsOccupied)
         {
             Debug.LogWarning("Cleaning an occupied table!");
-            return;  // Prevent cleaning an occupied table
+            return;
         }
 
-        IsDirty = false;
+        IsDirty = false;  // Set the table to clean
         Debug.Log("Table has been cleaned.");
     }
 }

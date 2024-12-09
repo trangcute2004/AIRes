@@ -107,6 +107,7 @@ public class Customer : MonoBehaviour
         // Find a table that is not occupied and is clean
         assignedTable = tables.Find(t => !t.IsOccupied && !t.IsDirty);
 
+
         if (assignedTable != null)
         {
             assignedTable.Occupy();  // Mark the table as occupied
@@ -276,9 +277,11 @@ public class Customer : MonoBehaviour
             if (assignedTable != null)
             {
                 assignedTable.Vacate();  // Make the table dirty and show leftovers
+                assignedTable.IsDirty = true; // Set the table as dirty
             }
         }
     }
+
 
     private void MoveToDoor()
     {
@@ -293,23 +296,28 @@ public class Customer : MonoBehaviour
 
         if (Vector3.Distance(transform.position, doorPosition) < 0.1f)
         {
+            // Step 1: Vacate the table and set it dirty
             if (assignedTable != null)
             {
-                assignedTable.Vacate();  // Make the table dirty and unoccupied
+                assignedTable.Vacate();  // Mark the table as dirty (this is already calling SetDirty() internally)
+                assignedTable.SetDirty();  // Explicitly ensure it's marked dirty (in case you want to highlight this step)
             }
 
             if (dishInstance != null)
             {
-                Destroy(dishInstance);
+                Destroy(dishInstance);  // Remove the food dish instance
             }
 
             Destroy(gameObject);  // Remove the customer object
         }
 
-        if (assignedTable != null)
+        // Step 2: Clean the table after the customer leaves
+        if (assignedTable != null && assignedTable.IsDirty)
         {
             assignedTable.Clean();  // Clean the table after the customer leaves
+            assignedTable.IsDirty = false; // Set the table back to clean
         }
     }
+
 
 }

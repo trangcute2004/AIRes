@@ -706,10 +706,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2634323601877479046, guid: 152a23b24958d1a40af0ca42391e3ba5, type: 3}
-      propertyPath: leftoverPrefab
-      value: 
-      objectReference: {fileID: 4785407890188270187, guid: f9d2f463244b0db46a73ce7ee43a35f7, type: 3}
     - target: {fileID: 6291025584524310129, guid: 152a23b24958d1a40af0ca42391e3ba5, type: 3}
       propertyPath: m_Name
       value: Table
@@ -1097,6 +1093,14 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 2936593204085826156, guid: 6d21dc9ec56223e48afd44a5d1111e72, type: 3}
+      propertyPath: defaultPosition.x
+      value: -0.7
+      objectReference: {fileID: 0}
+    - target: {fileID: 2936593204085826156, guid: 6d21dc9ec56223e48afd44a5d1111e72, type: 3}
+      propertyPath: defaultPosition.y
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 2936593204085826156, guid: 6d21dc9ec56223e48afd44a5d1111e72, type: 3}
       propertyPath: dishStackLocation
       value: 
       objectReference: {fileID: 1130554439}
@@ -1106,11 +1110,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4165410875821065220, guid: 6d21dc9ec56223e48afd44a5d1111e72, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.47
+      value: -0.67
       objectReference: {fileID: 0}
     - target: {fileID: 4165410875821065220, guid: 6d21dc9ec56223e48afd44a5d1111e72, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 4
+      value: 2.97
       objectReference: {fileID: 0}
     - target: {fileID: 4165410875821065220, guid: 6d21dc9ec56223e48afd44a5d1111e72, type: 3}
       propertyPath: m_LocalPosition.z

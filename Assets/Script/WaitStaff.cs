@@ -5,6 +5,8 @@ public class WaitStaff : MonoBehaviour
 {
     public enum State { Idle, GotoTable, TakingOrderFromCus, GotoDishStack, TakeOrderFromDishStack, DeliveringOrderToCustomer }
     public State currentState = State.Idle;
+    public Vector3 defaultPosition;
+
 
     private Queue<Customer> customerQueueForService = new Queue<Customer>(); // Queue of customers waiting to be served
     private Queue<Table> cleaningQueue = new Queue<Table>();  // Queue for tables to clean
@@ -24,6 +26,7 @@ public class WaitStaff : MonoBehaviour
     private void Start()
     {
         currentState = State.Idle;
+        defaultPosition = transform.position;
     }
 
     private void Update()
@@ -48,7 +51,11 @@ public class WaitStaff : MonoBehaviour
                     Table tableToClean = cleaningQueue.Dequeue();  // Get the next dirty table
                     CleanTable(tableToClean);
                 }
+
+                // Move to the default position if Idle
+                transform.position = Vector3.MoveTowards(transform.position, defaultPosition, moveSpeed * Time.deltaTime);
                 break;
+
 
             case State.GotoTable:
                 MoveToCustomer();
