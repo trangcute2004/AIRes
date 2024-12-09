@@ -7,7 +7,7 @@ public class Customer : MonoBehaviour
     public State currentState = State.LookingForTable;
     public string CurrentState => currentState.ToString();
 
-    private Table assignedTable;
+    public Table assignedTable;
     private Order currentOrder;
     private float eatingTimer;
     private List<Order> menu = new List<Order>();

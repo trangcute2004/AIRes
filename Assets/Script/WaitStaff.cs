@@ -8,7 +8,7 @@ public class WaitStaff : MonoBehaviour
     public Vector3 defaultPosition;
 
 
-    private Queue<Customer> customerQueueForService = new Queue<Customer>(); // Queue of customers waiting to be served
+    public Queue<Customer> customerQueueForService = new Queue<Customer>(); // Queue of customers waiting to be served
     private Queue<Table> cleaningQueue = new Queue<Table>();  // Queue for tables to clean
 
     private Customer currentCustomer; // The customer currently being served
@@ -141,7 +141,7 @@ public class WaitStaff : MonoBehaviour
 
         // If there is a waiting customer, serve them first, otherwise serve the first customer in the queue
         currentCustomer = waitingCustomer ?? customerQueueForService.Dequeue();
-        Debug.Log($"Serving Customer {currentCustomer.gameObject.name}.");
+        Debug.Log($"Serving Customer {currentCustomer.gameObject.name}. Customer is at table {currentCustomer.assignedTable.name}");
         currentState = State.GotoTable; // Move to the next customer
     }
 
@@ -242,9 +242,18 @@ public class WaitStaff : MonoBehaviour
             ResetWaitStaff();  // Reset for the next customer
 
             // Automatically serve the next customer in the queue
-            AssignNextCustomer();  // Call to serve the next customer
+            // Call AssignNextCustomer to ensure the next customer is served immediately
+            if (customerQueueForService.Count > 0)
+            {
+                AssignNextCustomer();  // Proceed to serve the next customer in line
+            }
+            else
+            {
+                currentState = State.Idle;  // No customers, go idle
+            }
         }
     }
+
 
     private void ResetWaitStaff()
     {
