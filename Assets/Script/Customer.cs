@@ -191,10 +191,11 @@ public class Customer : MonoBehaviour
 
         if (currentState == State.OrderGiven)
         {
-            Debug.Log($"Customer {gameObject.name} is waiting for food.");
-            currentState = State.WaitingForFood;
+            Debug.Log($"Customer {gameObject.name} is now waiting for food.");
+            currentState = State.WaitingForFood; // Correct state transition
         }
     }
+
 
     public void OnOrderDelivered()
     {
@@ -211,7 +212,7 @@ public class Customer : MonoBehaviour
         {
             if (currentOrder == null)
             {
-                ShowRandomOrder();
+                ShowRandomOrder(); // Ensure the customer selects an order first
             }
 
             if (currentOrder != null)
@@ -227,6 +228,7 @@ public class Customer : MonoBehaviour
         }
     }
 
+
     private void WaitForOrder()
     {
         if (currentOrder == null)
@@ -235,16 +237,18 @@ public class Customer : MonoBehaviour
             return;
         }
 
-        if (currentState == State.WaitingForFood && currentOrder.IsDelivered)
+        // Check if food has been delivered
+        if (currentOrder.IsDelivered)
         {
-            Debug.Log($"Food delivered to Customer {gameObject.name}. Starting to eat.");
-            StartEating();
+            currentState = State.Eating;  // Transition to Eating state after food is delivered
+            StartEating();  // Start eating once food is delivered
         }
         else
         {
             Debug.Log($"Customer {gameObject.name} is still waiting for their food.");
         }
     }
+
 
     private void StartEating()
     {
@@ -267,7 +271,7 @@ public class Customer : MonoBehaviour
 
         if (eatingTimer <= 0f)
         {
-            currentState = State.Leaving;
+            currentState = State.Leaving; // Transition to Leaving once the eating is done
 
             if (dishInstance != null)
             {
@@ -276,12 +280,11 @@ public class Customer : MonoBehaviour
 
             if (assignedTable != null)
             {
-                assignedTable.Vacate();  // Make the table dirty and show leftovers
+                assignedTable.Vacate();  // Mark the table dirty and show leftovers
                 assignedTable.IsDirty = true; // Set the table as dirty
             }
         }
     }
-
 
     private void MoveToDoor()
     {
@@ -299,8 +302,8 @@ public class Customer : MonoBehaviour
             // Step 1: Vacate the table and set it dirty
             if (assignedTable != null)
             {
-                assignedTable.Vacate();  // Mark the table as dirty (this is already calling SetDirty() internally)
-                assignedTable.SetDirty();  // Explicitly ensure it's marked dirty (in case you want to highlight this step)
+                assignedTable.Vacate();  // Mark the table dirty
+                assignedTable.SetDirty();  // Ensure it's marked dirty
             }
 
             if (dishInstance != null)
@@ -318,6 +321,5 @@ public class Customer : MonoBehaviour
             assignedTable.IsDirty = false; // Set the table back to clean
         }
     }
-
 
 }
