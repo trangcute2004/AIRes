@@ -4,14 +4,15 @@ using UnityEngine;
 
 public class DishStack : MonoBehaviour
 {
-    public GameObject saladPrefab;  // Prefab for the salad dish
-    public GameObject burgerPrefab; // Prefab for the burger dish
-    public GameObject pizzaPrefab;  // Prefab for the pizza dish
+    public GameObject saladPrefab;  
+    public GameObject burgerPrefab; 
+    public GameObject pizzaPrefab;  
 
     public int maxStackSize = 5;    // Maximum number of dishes in the stack
-    public Vector2 stackStartPosition; // Starting position of the stack in world coordinates
+    public Vector2 stackStartPosition; // Starting position of the stack in scene
     public float stackSpacing = 0.5f;  // Vertical spacing between dishes in the stack
 
+    //store the dishes in the stack.
     private List<GameObject> dishStack = new List<GameObject>();
 
     void Start()
@@ -22,17 +23,20 @@ public class DishStack : MonoBehaviour
         AddDishToStack(pizzaPrefab);
     }
 
-    // Adds a new dish prefab to the stack
+    // add a dish to the stack.
     public void AddDishToStack(GameObject dishPrefab)
     {
+        // Check if the stack has reached its maximum size.
         if (dishStack.Count >= maxStackSize)
         {
             Debug.LogWarning("Dish stack is full. Cannot add more dishes.");
             return;
         }
 
-        // Instantiate the dish at the correct position
+        // Calculate the position where the new dish should be placed.
         Vector3 dishPosition = new Vector3(stackStartPosition.x, stackStartPosition.y - (dishStack.Count * stackSpacing), 0);
+
+        // Instantiate the new dish at the correct position
         GameObject newDish = Instantiate(dishPrefab, dishPosition, Quaternion.identity, transform);
 
         // Add the dish to the stack
@@ -42,6 +46,7 @@ public class DishStack : MonoBehaviour
     // Removes the top dish from the stack
     public GameObject RemoveDishFromStack()
     {
+        //Check if the dish stack is empty
         if (dishStack.Count == 0)
         {
             Debug.LogWarning("Dish stack is empty. No dishes to remove.");

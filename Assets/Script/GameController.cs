@@ -1,52 +1,66 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class GameController : MonoBehaviour
 {
+    //ensure  1 game controlloer in game
     public static GameController instance;
-    public List<Table> tables = new List<Table>(); // List to store all existing tables in the scene
-    public WaitStaff WaitStaff;
-    public Chef chef; // Chef reference
+    //list to store all existing table, order
+    public List<Table> tables = new List<Table>();
+    private List<Order> menu = new List<Order>();
 
-    public GameObject customerPrefab; // Customer prefab
-    public Vector3 spawnPosition; // Position where customers will spawn
-    public int customerSpawnRate; // Rate at which customers spawn
+    public WaitStaff WaitStaff;
+    public Chef chef; 
+    
+    //spawn customer position
+    public Vector3 spawnPosition; 
+    //rate at which customer spawn
+    public int customerSpawnRate;
+    
     [SerializeField] public GameObject burgerPrefab;
     [SerializeField] public GameObject pizzaPrefab;
     [SerializeField] public GameObject saladPrefab;
+    public GameObject customerPrefab;
 
-    private List<Order> menu = new List<Order>(); // Declare the menu list here
-
+    // this is called when the game start
     private void Awake()
     {
+        //make globally accessible
         instance = this;
     }
 
     void Start()
     {
+        //speed up the game 3 times
         Time.timeScale = 3.0f;
+
+        //Check if the customerPrefab has been assigned in the inspector.
         if (customerPrefab == null)
         {
             Debug.LogError("Customer prefab is missing. Please assign it in the inspector.");
             return;
         }
 
-        InitializeTables();  // Initialize tables (they should already exist in the scene)
-        InitializeWaitStaff(); // Initialize wait staff (if needed)
-        InitializeChef(); // Initialize chef (if needed)
+        InitializeTables();  // Initialize tables
+        InitializeWaitStaff(); // Initialize wait staff
+        //InitializeChef(); // Initialize chef (if needed)
         InitializeMenu(); // Initialize the menu with orders
-        InvokeRepeating("SpawnCustomer", 0, 7f); // Spawn the first customer immediately, then every 5 seconds
+        InvokeRepeating("SpawnCustomer", 0, 7f); // Spawn the first customer immediately, then every 7 seconds
 
     }
 
+    //add food items to menu
     private void InitializeMenu()
     {
         menu.Clear(); // Ensure the menu starts empty
 
+        // Check if the burger prefab exists in the scene
         if (burgerPrefab != null)
         {
-            menu.Add(new Order("Burger", 5.0f, burgerPrefab, 5f));  // 5 seconds for a burger
+            // Add a new order for a burger to the menu, with a price of 5.0f and a preparation time of 5 seconds.
+            menu.Add(new Order("Burger", 5.0f, burgerPrefab, 5f));  
             Debug.Log("Added Burger to the menu.");
         }
         else
@@ -54,9 +68,11 @@ public class GameController : MonoBehaviour
             Debug.LogError("Burger prefab is missing.");
         }
 
+        // Check if the salad prefab exists in the scene.
         if (saladPrefab != null)
         {
-            menu.Add(new Order("Salad", 3.0f, saladPrefab, 3f));  // 3 seconds for salad
+            //// Add a new order for a salad to the menu, with a price of 3.0f and a preparation time of 3 seconds.
+            menu.Add(new Order("Salad", 3.0f, saladPrefab, 3f));  
             Debug.Log("Added Salad to the menu.");
         }
         else
@@ -64,8 +80,10 @@ public class GameController : MonoBehaviour
             Debug.LogError("Salad prefab is missing.");
         }
 
+        // Check if the pizza prefab exists in the scene
         if (pizzaPrefab != null)
         {
+            // Add a new order for a pizza to the menu, with a price of 10.0f and a preparation time of 8 seconds.
             menu.Add(new Order("Pizza", 10.0f, pizzaPrefab, 8f));  // 8 seconds for pizza
             Debug.Log("Added Pizza to the menu.");
         }
@@ -75,27 +93,29 @@ public class GameController : MonoBehaviour
         }
     }
 
-
+    // Initializes the tables in the game scene by finding all Table objects present.
     private void InitializeTables()
     {
+        // Find all objects of type Table in the scene and convert them into a list.
         tables = new List<Table>(FindObjectsOfType<Table>());
     }
 
-    private void InitializeChef()
+    /*private void InitializeChef()
     {
         chef = FindObjectOfType<Chef>();
-    }
+    }*/
 
+    //initializes the WaitStaff by finding the WaitStaff object in the scene.
     private void InitializeWaitStaff()
     {
+        //// Find the first object of type WaitStaff in the scene.
         WaitStaff = FindObjectOfType<WaitStaff>();
     }
-    private void Update()
-    {
-       
-    }
+
+    // spawn a new customer in the game at the design spawn position.
     private void SpawnCustomer()
     {
+        // Check if the customer prefab is assigned in the inspector.
         if (customerPrefab == null)
         {
             Debug.LogError("Customer prefab is not assigned!");
@@ -104,15 +124,18 @@ public class GameController : MonoBehaviour
 
         // Instantiate a new customer
         GameObject customerObject = Instantiate(customerPrefab, spawnPosition, Quaternion.identity);
+
+        // Get the Customer component attached to the instantiated customer object.
         Customer customer = customerObject.GetComponent<Customer>();
 
+        // Check if the Customer component was found on the instantiated object.
         if (customer == null)
         {
             Debug.LogError("Spawned object does not have a Customer component.");
-            return;
+            return; // Exit the method if the `Customer` component is not found.
         }
 
-        // Debug the menu content
+        // Debugging check to ensure the menu is properly initialized and not empty.
         if (menu == null || menu.Count == 0)
         {
             Debug.LogError("Menu is not initialized or empty. Ensure it is populated in GameController.");
