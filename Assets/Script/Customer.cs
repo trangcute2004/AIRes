@@ -66,6 +66,7 @@ public class Customer : MonoBehaviour
     {
         switch (currentState)
         {
+            //Simple BEHAAVIOR TREE:The customer through states similar to how a behavior tree run tasks
             case State.LookingForTable:
                 MoveToTable();
                 break;

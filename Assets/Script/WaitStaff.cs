@@ -47,6 +47,8 @@ public class WaitStaff : MonoBehaviour
         Debug.Log("STAFF STATE: " + currentState.ToString());
         switch (currentState)
         {
+
+            //simple BEHAVIOR TREE - decision making
             case State.Idle:
                 // Check if there are customers in the queue waiting to be served.
                 if (customerQueueForService.Count > 0)
@@ -166,7 +168,6 @@ public class WaitStaff : MonoBehaviour
         }
     }
 
-    //simple behavior tree
     // taking the customer's order
     private void TakeOrderFromCustomer()
     {
