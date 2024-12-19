@@ -142,7 +142,7 @@ public class WaitStaff : MonoBehaviour
         currentState = State.GotoTable; // Move to the next customer
     }
 
-    //PATH FINDING & simple behavior tree
+    //PATH FINDING 
     // Moves the waitstaff to the customer's position
     private void MoveToCustomer()
     {
