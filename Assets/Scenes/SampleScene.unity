@@ -137,11 +137,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 618399342389966222, guid: 152a23b24958d1a40af0ca42391e3ba5, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -4.13
+      value: -4.19
       objectReference: {fileID: 0}
     - target: {fileID: 618399342389966222, guid: 152a23b24958d1a40af0ca42391e3ba5, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.63
+      value: 0.54
       objectReference: {fileID: 0}
     - target: {fileID: 618399342389966222, guid: 152a23b24958d1a40af0ca42391e3ba5, type: 3}
       propertyPath: m_LocalPosition.z
@@ -397,12 +397,12 @@ MonoBehaviour:
   - {fileID: 783458157}
   WaitStaff: {fileID: 1383119649}
   chef: {fileID: 3718727475715435829, guid: c4383aea7cbd5af4a84b84b2285a5de8, type: 3}
-  customerPrefab: {fileID: 8881497008709236388, guid: 0c8bf88fbdef620499d3c46c9072b18c, type: 3}
   spawnPosition: {x: 0, y: 0, z: 0}
   customerSpawnRate: 2
   burgerPrefab: {fileID: 8133430973538948628, guid: 15d5013fd6f5a684495ea1f42f190fef, type: 3}
   pizzaPrefab: {fileID: 5045082804309660329, guid: 94ac41389ec82bd45927df69e73e9472, type: 3}
   saladPrefab: {fileID: 5528717017803882264, guid: e4058678f98bb1245926d2b18c874c79, type: 3}
+  customerPrefab: {fileID: 8881497008709236388, guid: 0c8bf88fbdef620499d3c46c9072b18c, type: 3}
 --- !u!4 &1044838750
 Transform:
   m_ObjectHideFlags: 0
@@ -596,11 +596,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 618399342389966222, guid: 152a23b24958d1a40af0ca42391e3ba5, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -7.61
+      value: -7.55
       objectReference: {fileID: 0}
     - target: {fileID: 618399342389966222, guid: 152a23b24958d1a40af0ca42391e3ba5, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.77
+      value: 0.54
       objectReference: {fileID: 0}
     - target: {fileID: 618399342389966222, guid: 152a23b24958d1a40af0ca42391e3ba5, type: 3}
       propertyPath: m_LocalPosition.z
