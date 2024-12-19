@@ -40,24 +40,9 @@ public class Customer : MonoBehaviour
     //The position where the door will be placed in the scene
     private Vector3 doorPosition;
 
-    //set the menu for the customer
-    public void SetMenu(List<Order> availableMenu)
-    {
-        // Check if the available menu is null or empty
-        if (availableMenu == null || availableMenu.Count == 0)
-        {
-            Debug.LogError($"Customer {gameObject.name} received an empty or null menu.");
-            return;
-        }
-
-        //If the menu is valid, create a new list and copy the available menu items into it.
-        menu = new List<Order>(availableMenu);
-        Debug.Log($"Customer {gameObject.name} received a menu with {menu.Count} items.");
-    }
-
     private void Start()
     {
-        //// Check if the doorPrefab is not assigned in the Inspector
+        // Check if the doorPrefab is not assigned in the Inspector
         if (doorPrefab == null)
         {
             Debug.LogError("Door prefab is not assigned! Please assign it in the Inspector.");
@@ -75,6 +60,8 @@ public class Customer : MonoBehaviour
     //store the previous state of the customer
     private State previousState;
 
+
+    //FINITE STATE MACHINE
     private void UpdateState()
     {
         switch (currentState)
@@ -155,6 +142,7 @@ public class Customer : MonoBehaviour
         }
     }
 
+    //PATHFINDING
     //moves the customer to the assigned table and handles the state transition once the customer reaches the table
     private void MoveToTable()
     {
@@ -174,6 +162,21 @@ public class Customer : MonoBehaviour
             Debug.Log($"Customer reached table: {assignedTable.TableNumber}");
             currentState = State.WaitingStaffToCome;  // Transition to waiting for staff once the customer reaches the table
         }
+    }
+
+    //set the menu for the customer
+    public void SetMenu(List<Order> availableMenu)
+    {
+        // Check if the available menu is null or empty
+        if (availableMenu == null || availableMenu.Count == 0)
+        {
+            Debug.LogError($"Customer {gameObject.name} received an empty or null menu.");
+            return;
+        }
+
+        //If the menu is valid, create a new list and copy the available menu items into it.
+        menu = new List<Order>(availableMenu);
+        Debug.Log($"Customer {gameObject.name} received a menu with {menu.Count} items.");
     }
 
     //randomly selects an order from the menu and spawns the dish prefab at the customer's table

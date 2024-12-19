@@ -39,6 +39,8 @@ public class WaitStaff : MonoBehaviour
 
     }
 
+    
+    //FINITE STATE MACHINE
     private void UpdateState()
     {
         //track the current state of the waitstaff in the console
@@ -138,6 +140,7 @@ public class WaitStaff : MonoBehaviour
         currentState = State.GotoTable; // Move to the next customer
     }
 
+    //PATH FINDING & simple behavior tree
     // Moves the waitstaff to the customer's position
     private void MoveToCustomer()
     {
@@ -163,6 +166,7 @@ public class WaitStaff : MonoBehaviour
         }
     }
 
+    //simple behavior tree
     // taking the customer's order
     private void TakeOrderFromCustomer()
     {
@@ -198,6 +202,8 @@ public class WaitStaff : MonoBehaviour
         }
     }
 
+
+    //PATH FINDING
     //Moves the WaitStaff to the dish stack to collect the dish
     private void MoveToDishStack()
     {
