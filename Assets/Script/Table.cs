@@ -51,7 +51,7 @@ public class Table : MonoBehaviour
         if (leftoverPrefab != null && leftoverInstance == null)
         {
             // Position the leftover prefab slightly above the table (adjust the position if needed)
-            Vector3 spawnPosition = transform.position + Vector3.up * 3f;  // 1.5 units above the table for visibility
+            Vector3 spawnPosition = transform.position + Vector3.up * 3f;  // 3 units above the table for visibility
 
             // Instantiate the leftover prefab at the adjusted position
             leftoverInstance = Instantiate(leftoverPrefab, spawnPosition, Quaternion.identity);
@@ -69,9 +69,9 @@ public class Table : MonoBehaviour
     }
 
 
-    // Cleans the table and marks it as ready for new customers
     public void Clean()
     {
+        Debug.Log($"Cleaning table {TableNumber}.");
         if (IsOccupied)
         {
             Debug.LogWarning("Cleaning an occupied table!");
@@ -84,8 +84,10 @@ public class Table : MonoBehaviour
         // Destroy the leftover instance if it exists and reset it
         if (leftoverInstance != null)
         {
+            Debug.Log("Destroying leftover object.");
             Destroy(leftoverInstance);  // Remove the leftover object
             leftoverInstance = null;  // Reset the leftover instance reference
         }
     }
+
 }

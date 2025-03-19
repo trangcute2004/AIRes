@@ -27,7 +27,10 @@ public class GameController : MonoBehaviour
 
     public float totalIncome = 0f;  // Track the total income
     public Text totalIncomeText;  // Reference to the text UI element to show the income
-    public GameObject paymentUI;  // Reference to the payment UI panel (optional, not required for auto-payment)
+    public Text resultText;  // Reference to the text UI element to display WIN or LOSE
+    public Text targetIncomeText;  // Reference to the text UI element to display the target income
+    public GameObject paymentUI;  // Reference to the payment UI panel (optional)
+    private float randomWinCondition;  // Random win condition between 40 and 80
 
     // this is called when the game start
     private void Awake()
@@ -40,6 +43,11 @@ public class GameController : MonoBehaviour
     {
         //speed up the game 3 times
         Time.timeScale = 3.0f;
+
+        // Randomly set the win condition between 40 and 80
+        randomWinCondition = Random.Range(40f, 80f);
+        Debug.Log($"Win condition set to: {randomWinCondition}$");
+
 
         //Check if the customerPrefab has been assigned in the inspector.
         if (customerPrefab == null)
@@ -54,6 +62,9 @@ public class GameController : MonoBehaviour
         InitializeMenu(); // Initialize the menu with orders
         InvokeRepeating("SpawnCustomer", 0, 7f); // Spawn the first customer immediately, then every 7 seconds
 
+        // Initialize the UI text
+        totalIncomeText.text = $"Total Income: {totalIncome}$";  // Display the initial income
+        resultText.gameObject.SetActive(false);  // Hide the result text at the beginning
     }
 
     public void AddIncome(float amount)
@@ -61,6 +72,26 @@ public class GameController : MonoBehaviour
         totalIncome += amount;  // Add the amount to the total income
         totalIncomeText.text = $"Total Income: {totalIncome}$";  // Update the UI with the new income
         Debug.Log($"Total income: {totalIncome}$");
+
+        // Check if the player has reached the win condition after adding the income
+        CheckWinCondition();
+    }
+
+    private void CheckWinCondition()
+    {
+        // Check if total income meets the win condition
+        if (totalIncome >= randomWinCondition)
+        {
+            resultText.gameObject.SetActive(true);  // Show the result text
+            resultText.text = "WIN";  // Display WIN
+            Debug.Log("WIN - Player has met the win condition!");
+        }
+        else if (totalIncome > 0)
+        {
+            resultText.gameObject.SetActive(true);  // Show the result text
+            resultText.text = "LOSE";  // Display LOSE
+            Debug.Log("LOSE - Player did not meet the win condition.");
+        }
     }
 
     // Optionally, you can show the payment UI, but it's not necessary for automatic payment
@@ -69,6 +100,7 @@ public class GameController : MonoBehaviour
         paymentUI.SetActive(true);  // Activate the payment UI panel
         paymentUI.GetComponentInChildren<Text>().text = $"Pay: {amount}$";  // Set the amount to pay in the UI
     }
+
 
     //add food items to menu
     private void InitializeMenu()
