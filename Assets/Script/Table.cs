@@ -3,84 +3,89 @@ using UnityEngine;
 
 public class Table : MonoBehaviour
 {
-    //represent the table number
     public int TableNumber { get; private set; }
-
-    //represent the capacity of the table
     public int Capacity { get; private set; }
 
-    //checks if the table is currently occupied by a customer or not.
-    public bool IsOccupied { get; private set; }
+    public bool IsOccupied = false;  // Whether the table is currently occupied
+    public bool IsDirty = false;  // Whether the table is dirty after use
 
-    //check if the table is dirty
-    public bool IsDirty { get; set; } 
+    public GameObject leftoverPrefab;  // The prefab of the leftover object (food remains, etc.)
+    private GameObject leftoverInstance;  // Instance of leftover prefab
 
-    public GameObject leftoverPrefab;
-
-    //store the instance of the leftover object
-    private GameObject leftoverInstance;
-
-    //initialize the properties of a table
+    // Initialize the properties of a table
     public void InitializeTable(int tableNumber, int capacity)
     {
-        // Set the number for table
         TableNumber = tableNumber;
-        //Set the seating capacity of the table
         Capacity = capacity;
-        IsOccupied = false; // The table is not occupied at the start.
-        IsDirty = false; // The table is clean at the start.
+        IsOccupied = false;  // The table is not occupied at the start
+        IsDirty = false;  // The table is clean at the start
     }
 
-    //marks the table as occupied when a customer sits down at it
+    // Marks the table as occupied when a customer sits down at it
     public void Occupy()
     {
-        //// Check if the table is already occupied.
         if (IsOccupied)
         {
             Debug.LogWarning("Table is already occupied!");
             return;
         }
 
-        // // If the table is not occupied, we mark it as occupied.
-        IsOccupied = true;
+        IsOccupied = true;  // Mark the table as occupied
         Debug.Log("Table has been occupied.");
     }
 
-    //when a customer leaves the table, making it available for new customers
+    // When a customer leaves the table, making it available for new customers
     public void Vacate()
     {
-        // Mark the table as unoccupied by setting IsOccupied to false.
-        IsOccupied = false;
-
-        //the table is now dirty (needs cleaning).
-        SetDirty();
+        IsOccupied = false;  // Mark the table as unoccupied
+        SetDirty();  // The table becomes dirty after the customer leaves
     }
 
-    //marks the table as dirty
+    // Marks the table as dirty and spawns a leftover prefab
     public void SetDirty()
     {
-        IsDirty = true;  // This marks the table as dirty.
+        IsDirty = true;  // Mark the table as dirty
+        Debug.Log($"Table {TableNumber} is now dirty.");
 
-        // Check if the leftoverPrefab is assigned and if no leftover instance exists already.
+        // Ensure that the leftoverPrefab is assigned and create the leftover instance
         if (leftoverPrefab != null && leftoverInstance == null)
         {
-            // If there isn't already a leftover instance, create one at the table's position
-            leftoverInstance = Instantiate(leftoverPrefab, transform.position + Vector3.up, Quaternion.identity);
+            // Position the leftover prefab slightly above the table (adjust the position if needed)
+            Vector3 spawnPosition = transform.position + Vector3.up * 3f;  // 1.5 units above the table for visibility
+
+            // Instantiate the leftover prefab at the adjusted position
+            leftoverInstance = Instantiate(leftoverPrefab, spawnPosition, Quaternion.identity);
+            leftoverInstance.transform.parent = transform;  // Optionally set parent to table for better organization
+            Debug.Log($"Leftover spawned at position: {spawnPosition}");
+        }
+        else if (leftoverPrefab == null)
+        {
+            Debug.LogError("Leftover prefab is not assigned! Please assign it in the Inspector.");
+        }
+        else
+        {
+            Debug.LogWarning("Leftover already exists at this table.");
         }
     }
 
-    //clean the table and mark it as ready for new customers
+
+    // Cleans the table and marks it as ready for new customers
     public void Clean()
     {
-        // Check if the table is occupied before cleaning it.
         if (IsOccupied)
         {
             Debug.LogWarning("Cleaning an occupied table!");
             return;
         }
 
-        //Mark the table as clean
         IsDirty = false;  // Set the table to clean
         Debug.Log("Table has been cleaned.");
+
+        // Destroy the leftover instance if it exists and reset it
+        if (leftoverInstance != null)
+        {
+            Destroy(leftoverInstance);  // Remove the leftover object
+            leftoverInstance = null;  // Reset the leftover instance reference
+        }
     }
 }

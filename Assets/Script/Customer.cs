@@ -114,8 +114,7 @@ public class Customer : MonoBehaviour
     //find a suitable table for the customer
     public void FindTable(List<Table> tables)
     {
-
-        // If the customer already has an assigned table
+        // If the customer already has an assigned table, we can skip the assignment.
         if (assignedTable != null)
         {
             Debug.Log($"Customer {gameObject.name} already has a table assigned.");
@@ -129,6 +128,7 @@ public class Customer : MonoBehaviour
         }
 
         // Find a table that is not occupied and is clean
+        // Ensure that the table is not occupied (IsOccupied should be false)
         assignedTable = tables.Find(t => !t.IsOccupied && !t.IsDirty);
 
         // If a suitable table is found, occupy the table and do the action
@@ -143,6 +143,7 @@ public class Customer : MonoBehaviour
             Debug.Log($"Customer {gameObject.name} could not find an available table.");
         }
     }
+
 
     //PATHFINDING
     //moves the customer to the assigned table and handles the state transition once the customer reaches the table
@@ -344,32 +345,33 @@ public class Customer : MonoBehaviour
         }
     }
 
-    //the customer is eating their food
+    // Customer.cs - After the customer finishes eating, they will vacate the table
     private void Eat()
     {
-        // Decrease the eating timer
         eatingTimer -= Time.deltaTime;
 
-        // Check if the eating timer has finished
+        // If the customer finishes eating
         if (eatingTimer <= 0f)
         {
-            currentState = State.Leaving; // Transition to Leaving once the eating is done
+            currentState = State.Leaving; // Transition to Leaving state
+
+            // Vacate the table, making it dirty and spawning the leftover prefab
+            if (assignedTable != null)
+            {
+                assignedTable.Vacate();  // The table becomes dirty, and the leftover will appear
+                GameController.instance.WaitStaff.AddCleaningTask(assignedTable);  // Add table to the cleaning queue
+            }
+
             AutoPayBill();  // Automatically pay the bill
 
-            // destroy the food object if the dish instance exists
+            // Destroy the dish instance if it exists
             if (dishInstance != null)
             {
                 Destroy(dishInstance);
             }
-
-            // Check if the customer has an assigned table
-            if (assignedTable != null)
-            {
-                assignedTable.Vacate();  // Mark the table dirty and show leftovers
-                assignedTable.IsDirty = true; // Set the table as dirty
-            }
         }
     }
+
 
     // Auto-pay when the customer finishes eating
     private void AutoPayBill()

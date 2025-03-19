@@ -60,7 +60,7 @@ public class WaitStaff : MonoBehaviour
                 if (cleaningQueue.Count > 0)
                 {
                     //Dequeue the next dirty table from the cleaning queue.
-                    Table tableToClean = cleaningQueue.Dequeue();  
+                    Table tableToClean = cleaningQueue.Dequeue();  // Get next table to clean
                     CleanTable(tableToClean);
                 }
 
@@ -309,18 +309,17 @@ public class WaitStaff : MonoBehaviour
     // Add a cleaning task for a dirty table
     public void AddCleaningTask(Table table)
     {
-        // Check if the table is not already in the cleaning queue and is dirty
         if (!cleaningQueue.Contains(table) && table.IsDirty)
         {
-            cleaningQueue.Enqueue(table);  // Add dirty table to the cleaning queue
+            cleaningQueue.Enqueue(table);  // Add dirty table to cleaning queue
         }
     }
 
     // Clean a table.
     private void CleanTable(Table table)
     {
-        // Check if the table is not null
-        if (table != null)
+        // Check if the table is not null and dirty
+        if (table != null && table.IsDirty)
         {
             table.Clean();  // Clean the table
             Debug.Log($"WaitStaff cleaned table {table.TableNumber}.");
