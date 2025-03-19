@@ -35,6 +35,7 @@ public class Customer : MonoBehaviour
     //for display on console
     public bool HasGivenOrder => hasGivenOrder;
 
+    private float totalPrice;  // Store the price of the dish
 
     public GameObject doorPrefab;
     //The position where the door will be placed in the scene
@@ -328,6 +329,7 @@ public class Customer : MonoBehaviour
         {
             // Set the eating timer for the current order's eating duration
             eatingTimer = currentOrder.EatingDuration;
+            totalPrice = currentOrder.Price;  // Set the price of the dish
         }
 
         // Change the customer's state to "Eating"
@@ -352,6 +354,7 @@ public class Customer : MonoBehaviour
         if (eatingTimer <= 0f)
         {
             currentState = State.Leaving; // Transition to Leaving once the eating is done
+            AutoPayBill();  // Automatically pay the bill
 
             // destroy the food object if the dish instance exists
             if (dishInstance != null)
@@ -368,6 +371,13 @@ public class Customer : MonoBehaviour
         }
     }
 
+    // Auto-pay when the customer finishes eating
+    private void AutoPayBill()
+    {
+        Debug.Log($"Customer {gameObject.name} automatically paid {totalPrice}$");
+        GameController.instance.AddIncome(totalPrice);  // Add to total income in GameController
+       
+    }
 
     //customer move to door
     private void MoveToDoor()

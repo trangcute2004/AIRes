@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEngine.UI;
 
 public class GameController : MonoBehaviour
 {
@@ -23,6 +24,10 @@ public class GameController : MonoBehaviour
     [SerializeField] public GameObject pizzaPrefab;
     [SerializeField] public GameObject saladPrefab;
     public GameObject customerPrefab;
+
+    public float totalIncome = 0f;  // Track the total income
+    public Text totalIncomeText;  // Reference to the text UI element to show the income
+    public GameObject paymentUI;  // Reference to the payment UI panel (optional, not required for auto-payment)
 
     // this is called when the game start
     private void Awake()
@@ -51,6 +56,20 @@ public class GameController : MonoBehaviour
 
     }
 
+    public void AddIncome(float amount)
+    {
+        totalIncome += amount;  // Add the amount to the total income
+        totalIncomeText.text = $"Total Income: {totalIncome}$";  // Update the UI with the new income
+        Debug.Log($"Total income: {totalIncome}$");
+    }
+
+    // Optionally, you can show the payment UI, but it's not necessary for automatic payment
+    public void ShowPaymentUI(float amount)
+    {
+        paymentUI.SetActive(true);  // Activate the payment UI panel
+        paymentUI.GetComponentInChildren<Text>().text = $"Pay: {amount}$";  // Set the amount to pay in the UI
+    }
+
     //add food items to menu
     private void InitializeMenu()
     {
@@ -60,7 +79,7 @@ public class GameController : MonoBehaviour
         if (burgerPrefab != null)
         {
             // Add a new order for a burger to the menu, with a price of 5.0f and a preparation time of 5 seconds.
-            menu.Add(new Order("Burger", 5.0f, burgerPrefab, 5f));  
+            menu.Add(new Order("Burger", 5.0f, burgerPrefab, 5f, 5.0f));  
             Debug.Log("Added Burger to the menu.");
         }
         else
@@ -72,7 +91,7 @@ public class GameController : MonoBehaviour
         if (saladPrefab != null)
         {
             //// Add a new order for a salad to the menu, with a price of 3.0f and a preparation time of 3 seconds.
-            menu.Add(new Order("Salad", 3.0f, saladPrefab, 3f));  
+            menu.Add(new Order("Salad", 3.0f, saladPrefab, 3f, 3.0f));  
             Debug.Log("Added Salad to the menu.");
         }
         else
@@ -84,7 +103,7 @@ public class GameController : MonoBehaviour
         if (pizzaPrefab != null)
         {
             // Add a new order for a pizza to the menu, with a price of 10.0f and a preparation time of 8 seconds.
-            menu.Add(new Order("Pizza", 10.0f, pizzaPrefab, 8f));  // 8 seconds for pizza
+            menu.Add(new Order("Pizza", 10.0f, pizzaPrefab, 8f, 10.0f));  // 8 seconds for pizza
             Debug.Log("Added Pizza to the menu.");
         }
         else
