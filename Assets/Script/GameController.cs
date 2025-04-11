@@ -30,7 +30,9 @@ public class GameController : MonoBehaviour
     public Text resultText;  // Reference to the text UI element to display WIN or LOSE
     public Text targetIncomeText;  // Reference to the text UI element to display the target income
     public GameObject paymentUI;  // Reference to the payment UI panel (optional)
-    private float randomWinCondition;  // Random win condition between 40 and 80
+    public float targetIncome = 0f;  // The target income the player needs to reach
+
+    private bool hasGameEnded = false; // To ensure the game is checked only once after the countdown
 
     // this is called when the game start
     private void Awake()
@@ -43,11 +45,8 @@ public class GameController : MonoBehaviour
     {
         //speed up the game 3 times
         Time.timeScale = 3.0f;
-
-        // Randomly set the win condition between 40 and 80
-        randomWinCondition = Random.Range(40f, 80f);
-        Debug.Log($"Win condition set to: {randomWinCondition}$");
-
+        // Generate a random target income (between $50 and $100)
+        targetIncome = Random.Range(50f, 100f);
 
         //Check if the customerPrefab has been assigned in the inspector.
         if (customerPrefab == null)
@@ -65,6 +64,11 @@ public class GameController : MonoBehaviour
         // Initialize the UI text
         totalIncomeText.text = $"Total Income: {totalIncome}$";  // Display the initial income
         resultText.gameObject.SetActive(false);  // Hide the result text at the beginning
+
+        // Initialize the UI text
+        totalIncomeText.text = $"Total Income: {totalIncome}$";  // Display the initial income
+        targetIncomeText.text = $"Target Income: {targetIncome}$";  // Display the target income
+        resultText.gameObject.SetActive(false);  // Hide the result text at the beginning
     }
 
     public void AddIncome(float amount)
@@ -73,24 +77,29 @@ public class GameController : MonoBehaviour
         totalIncomeText.text = $"Total Income: {totalIncome}$";  // Update the UI with the new income
         Debug.Log($"Total income: {totalIncome}$");
 
-        // Check if the player has reached the win condition after adding the income
+        // Check if the player has reached the target income
         CheckWinCondition();
     }
 
     private void CheckWinCondition()
     {
-        // Check if total income meets the win condition
-        if (totalIncome >= randomWinCondition)
+        // Ensure this check only happens after the countdown timer is over
+        if (!hasGameEnded)
         {
-            resultText.gameObject.SetActive(true);  // Show the result text
-            resultText.text = "WIN";  // Display WIN
-            Debug.Log("WIN - Player has met the win condition!");
-        }
-        else if (totalIncome > 0)
-        {
-            resultText.gameObject.SetActive(true);  // Show the result text
-            resultText.text = "LOSE";  // Display LOSE
-            Debug.Log("LOSE - Player did not meet the win condition.");
+            if (totalIncome >= targetIncome)
+            {
+                resultText.gameObject.SetActive(true);  // Show the result text
+                resultText.text = "WIN";  // Display WIN
+                Debug.Log("WIN - Player has met the target income!");
+            }
+            else
+            {
+                resultText.gameObject.SetActive(true);  // Show the result text
+                resultText.text = "LOSE";  // Display LOSE
+                Debug.Log("LOSE - Player did not meet the target income.");
+            }
+
+            hasGameEnded = true; // Prevent multiple win/lose checks after the timer is over
         }
     }
 
@@ -100,7 +109,6 @@ public class GameController : MonoBehaviour
         paymentUI.SetActive(true);  // Activate the payment UI panel
         paymentUI.GetComponentInChildren<Text>().text = $"Pay: {amount}$";  // Set the amount to pay in the UI
     }
-
 
     //add food items to menu
     private void InitializeMenu()
