@@ -54,7 +54,7 @@ public class WaitStaffController : MonoBehaviour
                     SetState(STATE_WAITSTAFF.MoveToIdle);
                     break;
                 }
-                MoveTo(restaurantController.queueTables[0].transIndexChef.position, () =>
+                MoveTo(restaurantController.queueTables[0].standdingWaitStaff.position, () =>
                 {
                     restaurantController.queueTables[0].MarkAsServed();
                     restaurantController.queueTables.RemoveAt(0);
@@ -114,7 +114,7 @@ public class WaitStaffController : MonoBehaviour
         var customers = FindObjectsOfType<CustomerController>();
         foreach (var c in customers)
         {
-            if (Vector2.Distance(c.transform.position, table.transIndexHuman.position) < 0.2f)
+            if (Vector2.Distance(c.transform.position, table.standingCus.position) < 0.2f)
                 return c;
         }
         return null;

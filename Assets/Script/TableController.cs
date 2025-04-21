@@ -12,9 +12,9 @@ public enum STATE_TABLE
 
 public class TableController : MonoBehaviour
 {
-    public Transform transIndexChef;
-    public Transform transIndexItem;
-    public Transform transIndexHuman;
+    public Transform standdingWaitStaff;
+    public Transform standingFood;
+    public Transform standingCus;
 
     public STATE_TABLE stateTable { get; private set; }
     public DATA_MENU food { get; private set; }
@@ -51,14 +51,14 @@ public class TableController : MonoBehaviour
     {
         customer.SetState(CustomerController.STATE_CUSTOMER.EatFood);
         stateTable = STATE_TABLE.Served;
-        transIndexItem.gameObject.SetActive(true);
-        transIndexItem.GetComponent<SpriteRenderer>().sprite = GamePlayManager.instance.spriteCooks[(int)food];
+        standingFood.gameObject.SetActive(true);
+        standingFood.GetComponent<SpriteRenderer>().sprite = GamePlayManager.instance.spriteCooks[(int)food];
     }
 
     public void ClearTable()
     {
         food = default;
-        transIndexItem.gameObject.SetActive(false);
+        standingFood.gameObject.SetActive(false);
         stateTable = STATE_TABLE.Empty;
     }
 }

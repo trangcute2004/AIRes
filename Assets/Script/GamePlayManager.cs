@@ -22,7 +22,7 @@ public class GamePlayManager : MonoBehaviour
     public float timeGame = 30;
     float _timeGame;
     public TextMeshProUGUI txtTime;
-    public Image imgSlider;
+    //public Image imgSlider;
     private void Awake()
     {
         instance = this;
@@ -47,7 +47,7 @@ public class GamePlayManager : MonoBehaviour
         {
             _timeGame -= Time.deltaTime;
             txtTime.text = (int)_timeGame + "s";
-            imgSlider.fillAmount = _timeGame / timeGame;
+            //imgSlider.fillAmount = _timeGame / timeGame;
             if (_timeGame <= 0)
             {
                 if (restaurants[0].coin == restaurants[1].coin)

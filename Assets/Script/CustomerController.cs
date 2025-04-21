@@ -98,7 +98,7 @@ public class CustomerController : MonoBehaviour
                 }
             case STATE_CUSTOMER.GoToTheTable:
                 {
-                    if (MoveTarget(tableController.transIndexHuman.position))
+                    if (MoveTarget(tableController.standingCus.position))
                     {
                         List<ItemMenu> foods = GamePlayManager.instance.restaurants[indexRestaurant].ItemCanBuy(coin);
                         int index = Random.RandomRange(0, foods.Count);
