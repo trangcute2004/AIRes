@@ -6,8 +6,8 @@ using UnityEngine;
 
 public enum DATA_MENU
 {
-    Burger,
     Salad,
+    Burger,
     Pizza,
 }
 [System.Serializable]
