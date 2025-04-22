@@ -48,7 +48,7 @@ public class RestaurantController : MonoBehaviour
     }
     void UpdateDes()
     {
-        txtDes.text = "x" + coin;
+        txtDes.text = "$" + coin;
     }
     public bool IsFull()
     {

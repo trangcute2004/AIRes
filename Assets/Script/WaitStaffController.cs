@@ -16,18 +16,18 @@ public class WaitStaffController : MonoBehaviour
     public float skillLevel = 3f;
     public float speed = 2f;
 
-    [SerializeField] List<Sprite> sprites = new List<Sprite>();
+    //[SerializeField] List<Sprite> sprites = new List<Sprite>();
 
     private STATE_WAITSTAFF state = STATE_WAITSTAFF.Idle;
     private float cookingTimeLeft = 0f;
 
     private RestaurantController restaurantController;
     private Transform restPosition; // v? trí transCook c?a nhà hàng
-    private SpriteRenderer skin;
+    //private SpriteRenderer skin;
 
     private void Awake()
     {
-        skin = GetComponent<SpriteRenderer>();
+       // skin = GetComponent<SpriteRenderer>();
     }
     public void Init(Transform trans, RestaurantController restaurantController)
     {
@@ -122,6 +122,6 @@ public class WaitStaffController : MonoBehaviour
     void SetState(STATE_WAITSTAFF s)
     {
         state = s;
-        skin.sprite = sprites[(int)state];
+       // skin.sprite = sprites[(int)state];
     }
 }
