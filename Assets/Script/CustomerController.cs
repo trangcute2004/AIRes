@@ -85,7 +85,7 @@ public class CustomerController : MonoBehaviour
             // Check each restaurant in the list
             for (int i = 0; i < GamePlayManager.instance.restaurants.Count; i++)
             {
-                // Only add restaurant if customer can afford it and has enough patience to wait for the length queue, has enough coin to pay
+                // Only add restaurant if customer can afford it and has enough patience to wait for the length queue
                 if (patience >= GamePlayManager.instance.restaurants[i].GetLengthQueue()
                     && GamePlayManager.instance.restaurants[i].CanBuyItem(coin))
                 {
@@ -160,7 +160,7 @@ public class CustomerController : MonoBehaviour
                         
                         SetState(STATE_CUSTOMER.WaitForFood);
 
-                        // Adjust patience based on the time to make the food and some additional factor
+                        // Adjust timer waiting based on the time making food / Increase the timer
                         _patience1 += patience * 0.5f + foods[index].timeToMakeFood * 1.2f;
                         _patience2 = _patience1; // Reset the patience maximum value
                     }

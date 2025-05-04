@@ -3560,7 +3560,7 @@ MonoBehaviour:
   speed: 10
   patience: 6
   coin: 50
-  timeGame: 60
+  timeGame: 30
   txtTime: {fileID: 1540366530}
 --- !u!4 &1881380435
 Transform:
