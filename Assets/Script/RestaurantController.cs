@@ -87,7 +87,7 @@ public class RestaurantController : MonoBehaviour
     // Add a customer to the queue if there is space
     public void AddQueue(CustomerController customerController)
     {
-        // If the queue is full, remove the customer by calling Vote with false (not appreciated)
+        // If the queue is full, remove the customer 
         if (queueCus.Count == maxQueuCus)
         {
             Vote(customerController, false);
